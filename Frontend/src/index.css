@@ -1,0 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+  @apply bg-gray-100; /* Change to any shade of gray you prefer */
+}
+
+
+.fade-in-out {
+  opacity: 0;
+}
+
+.fade-in-out.show {
+  opacity: 1;
+  transition: opacity 500ms ease-in-out;
+}
+
+.transition-width {
+  transition-property: width;
+  transition-duration: 300ms;
+}
+
+
+
+
+.container {
+  font-family: 'Inter', sans-serif;
+}
+
+
+.card-container {
+  .green-card {
+    background-color: rgba(0, 128, 0, 0.1);
+  }
+
+  .blue-card {
+    background-color: rgba(0, 0, 255, 0.1);
+  }
+
+  .red-card {
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+
+  .orange-card {
+    background-color: rgba(255, 165, 0, 0.1);
+  }
+
+  .green-icon {
+    background-color: rgba(0, 128, 0, 0.15);
+  }
+
+  .blue-icon {
+    background-color: rgba(0, 0, 255, 0.15);
+  }
+
+  .red-icon {
+    background-color: rgba(255, 0, 0, 0.15);
+  }
+
+  .orange-icon {
+    background-color: rgba(255, 165, 0, 0.15);
+  }
+}
+
+
+
+/* Additional styles for the calendar, if needed */
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.fc .fc-button-group > .fc-button {
+  flex: 1 1 auto;
+  position: relative;
+  background-color: transparent;
+  border: none;
+  color: gray;
+  font-size: 1.5rem;
+  display: inline-block;
+  
+}
+/* Remove background color and border on click and focus */
+.fc .fc-button-group > .fc-button:active,
+.fc .fc-button-group > .fc-button:focus {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  color:gray;
+}
+/* Remove border from individual buttons */
+.fc-prev-button,
+.fc-next-button {
+  border: none;
+}
