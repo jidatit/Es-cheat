@@ -35,7 +35,7 @@ import Login from "./components/login";
 import ForgotPassword from "./components/forgotPassword";
 import Layout from "./components/Layout";
 import Dashboard from "./Pages/Dashboard";
-import Properties from "./Pages/Properties";
+import PropertyDetails from "./Pages/PropertyDetails";
 import Import from "./Pages/Import";
 import "./App.css";
 
@@ -51,7 +51,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="import" element={<Import />} />
-          <Route path="properties" element={<Properties />} />
+          <Route path="properties" element={<PropertyDetails />} />
         </Route>
       </Routes>
     </BrowserRouter>

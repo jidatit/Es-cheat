@@ -8,9 +8,13 @@ import { Button } from '@mui/material';
  import Trash from '../assets/images/trash-icon.svg';
  import { IoArrowUpOutline } from "react-icons/io5";
  import { IoArrowDownOutline } from "react-icons/io5";
+ import DeleteDialog from '../components/DeleteDialog';
 
 const ImportPage = () => {
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [dialogData, setDialogData] = useState({ title: '', uploadIds: [], propertyIds: [] });
+  const [subtitle, setSubtitle] = useState('');
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -69,9 +73,22 @@ const ImportPage = () => {
     setIsFilterMenuOpen(!isFilterMenuOpen);
   };
 
-  const openDeleteDialogue = () => {
-    // Implement delete dialog opening
+     const openDeleteDialogue = (title, ids) => {
+    setDialogData({ title, ...ids });
+    setSubtitle('Your subtitle here');
+    setIsDeleteDialogOpen(true);
   };
+
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    // Implement delete confirmation logic here
+    console.log('Delete confirmed');
+    closeDeleteDialog();
+  };
+
 
   const removeFilter = (index) => {
     const newFilters = appliedFilters.filter((_, i) => i !== index);
@@ -275,14 +292,32 @@ const getDefaultIcon = (key) => {
               />
             </div>
           </div>
+
+
+
           <div className=" flex items-center">
             {selectedUploads.size > 0 && (
               <div className="selected-row flex items-center">
                 <span>{selectedUploads.size} Selected</span>
-                <button className="delete-btn flex items-center ml-4" onClick={openDeleteDialogue}>
+                <button className="delete-btn flex items-center ml-4"
+                //  onClick={openDeleteDialogue}
+                      onClick={() => openDeleteDialogue('import',
+ { uploadIds: [1, 2, 3] })}
+
+                >
                   <img src={Trash} alt="delete-icon" className="mr-2" />
                  Delete
                 </button>
+                  {isDeleteDialogOpen && (
+               <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <DeleteDialog
+            data={dialogData}
+            subtitle={subtitle}
+            close={closeDeleteDialog}
+            onConfirmClick={handleConfirmDelete}
+          />
+        </div>
+      )}
               </div>
             )}
           </div>
@@ -307,6 +342,8 @@ const getDefaultIcon = (key) => {
             </a>
           </div>
         )}
+
+        
         {uploads.length > 0 ? (
 
     <div
@@ -390,11 +427,6 @@ const getDefaultIcon = (key) => {
       </tbody>
     </table>
   </div>
-
-
-
-
-
         ) : (
           <AppNoData
             title="No Uploads Available"
@@ -429,8 +461,6 @@ const AppNoData = ({ title, subtitle }) => {
 };
 
 export default ImportPage;
-
-
 
 
 
