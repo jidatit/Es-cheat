@@ -1,7 +1,8 @@
 
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { IconButton, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import {
   Home as HomeIcon,
   ImportExport as ImportIcon,
@@ -17,6 +18,8 @@ import {
 } from "@mui/icons-material";
 
 const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
+   const navigate = useNavigate();
+
   const onSidebarToggle = () => {
     if (typeof setIsSidebarOpened === "function") {
       setIsSidebarOpened(!isSidebarOpened);
@@ -26,34 +29,72 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
   };
 
   const onLogout = () => {
-    // Handle logout logic
+
+    console.log("hellooooooooooooooooooooo")
+    navigate("/login");
   };
 
   return (
     <div
-      className={`fixed top-0 left-0 h-screen transition-all duration-300 bg-white border overflow-hidden ${
+      className={`fixed top-0 left-0 h-screen transition-all duration-300 bg-white border ${
         isSidebarOpened ? "w-60" : "w-16"
       }`}
       style={{ overflow: "visible" }}
     >
-      
-      <div className="flex items-center justify-between p-4 cursor-pointer">
+      <div className="flex items-center justify-between p-4 cursor-pointer relative">
         <img
           src={isSidebarOpened ? "/src/assets/logo.png" : "/src/assets/logo1.png"}
           alt="logo"
-          className={`${isSidebarOpened ? "w-40 " : "w-12 "} mt-4`}
+          className={`${isSidebarOpened ? "w-40" : "w-12"} mt-4`}
         />
-        {/* <div className={`absolute ${isSidebarOpened ? "right-4" : "-right-7"} top-6 bg-red-500  rounded-full border`}> */}
-        <div className={`absolute ${isSidebarOpened ? "right-5 top-8 bg-blue-500" : "-right-[0.6rem] bg-green-500 "} top-8 w-5 h-5 rounded-full border flex items-center justify-center`}>
-          <IconButton
-            onClick={onSidebarToggle}
-            className={`transition-transform duration-300 focus:outline-none ${
-              isSidebarOpened ? "" : "translate-x-1/2"
-            }`}
-             style={{ boxShadow: "none" }}
-          >
-            {isSidebarOpened ? <ChevronLeftIcon /> : <ChevronRightIcon className="-ml-[1.2rem]" />}
-          </IconButton>
+        <div
+          className={`absolute ${
+            isSidebarOpened ? "right-5 top-[2.1rem]" : "right-[-0.6rem] top-[2.3rem]"
+          } w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer`}
+          onClick={onSidebarToggle}
+          style={{
+            backgroundColor: "white",
+            borderColor: "#F4F4F4",
+            // borderColor: "gray",
+            borderWidth: "1px",
+            boxShadow: "none",
+            "&:hover": {
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:active": {
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:focus": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:focus-within": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:focus-visible": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:target": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+          }}
+        >
+          {isSidebarOpened ? <ChevronLeftIcon /> : <ChevronRightIcon className="" />}
         </div>
       </div>
       {/* Sidebar Items */}
@@ -78,7 +119,7 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
             to="/import"
             className={({ isActive }) =>
               `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                isActive ? "text-blue-500 bg-[#EAEFFE] rounded-lg" : ""
               }`
             }
           >
@@ -93,7 +134,7 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
             to="/properties"
             className={({ isActive }) =>
               `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                isActive ? "text-blue-500 bg-[#EAEFFE] rounded-lg" : ""
               }`
             }
           >
@@ -108,7 +149,7 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
             to="/owners"
             className={({ isActive }) =>
               `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                isActive ? "text-blue-500 bg-[#EAEFFE] rounded-lg" : ""
               }`
             }
           >
@@ -123,7 +164,7 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
             to="/notifications"
             className={({ isActive }) =>
               `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                isActive ? "text-blue-500 bg-[#EAEFFE] rounded-lg" : ""
               }`
             }
           >
@@ -138,7 +179,7 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
             to="/reports"
             className={({ isActive }) =>
               `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                isActive ? "text-blue-500 bg-[#EAEFFE] rounded-lg" : ""
               }`
             }
           >
@@ -153,7 +194,7 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
             to="/claims"
             className={({ isActive }) =>
               `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                isActive ? "text-blue-500 bg-[#EAEFFE] rounded-lg" : ""
               }`
             }
           >
@@ -185,8 +226,5 @@ const SideBar = ({ isSidebarOpened, setIsSidebarOpened }) => {
 };
 
 export default SideBar;
-
-
-
 
 
