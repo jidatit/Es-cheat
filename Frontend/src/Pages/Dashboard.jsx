@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { FormControl, MenuItem, Select, Button } from "@mui/material";
 import FullCalendar from "@fullcalendar/react";
@@ -12,18 +11,18 @@ const Dashboard = ({ isSidebarOpened }) => {
   const [holders, setHolders] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchHolders();
-  }, []);
+  // useEffect(() => {
+  //   fetchHolders();
+  // }, []);
 
-  const fetchHolders = async () => {
-    try {
-      const response = await getOrganizations();
-      setHolders(response.data.organizations[0].holders);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // const fetchHolders = async () => {
+  //   try {
+  //     const response = await getOrganizations();
+  //     setHolders(response.data.organizations[0].holders);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   const handleChange = (event) => {
     setSelectedHolder(event.target.value);
@@ -61,11 +60,18 @@ const Dashboard = ({ isSidebarOpened }) => {
   };
 
   return (
-    <div className={`bg-white rounded-xl transition-all duration-300 ${isSidebarOpened ? "ml-60" : "ml-16"} overflow-x-hidden`}>
+    <div
+      className={`bg-white rounded-xl transition-all duration-300 ${
+        isSidebarOpened ? "ml-60" : "ml-16"
+      } overflow-x-hidden`}
+    >
       <div className="summary-title flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Active Property Summary</h2>
         <div>
-          <FormControl variant="outlined" sx={{ width: "200px", height: "40px" }}>
+          <FormControl
+            variant="outlined"
+            sx={{ width: "200px", height: "40px" }}
+          >
             <Select
               value={selectedHolder}
               onChange={handleChange}
@@ -188,4 +194,3 @@ const Dashboard = ({ isSidebarOpened }) => {
 };
 
 export default Dashboard;
-
