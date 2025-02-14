@@ -36,12 +36,12 @@ const SideBar = ({ menus, isSidebarOpened, setIsSidebarOpened }) => {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-screen transition-all duration-300 bg-white border overflow-hidden ${
+      className={`fixed top-0 left-0 h-screen transition-all duration-300 bg-white border ${
         isSidebarOpened ? "w-60" : "w-16"
       }`}
       style={{ overflow: "visible" }}
     >
-      <div className="flex items-center justify-between p-4 cursor-pointer">
+      <div className="flex items-center justify-between p-4 cursor-pointer relative">
         <img
           src={
             isSidebarOpened ? "/src/assets/logo.png" : "/src/assets/logo1.png"
@@ -52,20 +52,57 @@ const SideBar = ({ menus, isSidebarOpened, setIsSidebarOpened }) => {
         <div
           className={`absolute ${
             isSidebarOpened
-              ? "right-5 top-8 bg-blue-500"
-              : "-right-[0.6rem] bg-green-500"
-          } top-8 w-5 h-5 rounded-full border flex items-center justify-center`}
+              ? "right-5 top-[2.1rem]"
+              : "right-[-0.6rem] top-[2.3rem]"
+          } w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer`}
+          onClick={onSidebarToggle}
+          style={{
+            backgroundColor: "white",
+            borderColor: "#F4F4F4",
+            // borderColor: "gray",
+            borderWidth: "1px",
+            boxShadow: "none",
+            "&:hover": {
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:active": {
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:focus": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:focus-within": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:focus-visible": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+            "&:target": {
+              outline: "none",
+              backgroundColor: "white",
+              borderColor: "gray",
+              boxShadow: "none",
+            },
+          }}
         >
-          <IconButton
-            onClick={onSidebarToggle}
-            className="transition-transform duration-300"
-          >
-            {isSidebarOpened ? (
-              <ChevronLeft />
-            ) : (
-              <ChevronRight className="-ml-[1.2rem]" />
-            )}
-          </IconButton>
+          {isSidebarOpened ? (
+            <ChevronLeftIcon />
+          ) : (
+            <ChevronRightIcon className="" />
+          )}
         </div>
       </div>
       {/* Sidebar Items */}

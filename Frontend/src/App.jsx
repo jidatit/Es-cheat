@@ -144,6 +144,8 @@ function App() {
               }
             >
               <Route index element={<Dashboard />} />
+              <Route path="import" element={<Import />} />
+              <Route path="properties" element={<PropertyDetails />} />
               <Route path="*" element={<Navigate to="/notFound" />} />
             </Route>
 
