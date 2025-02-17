@@ -1,81 +1,91 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 // import PropertyExpansionPanel from './PropertyExpansionPanel';
-import Details from '../components/Details';
-import plusIcon from '../assets/images/plus-icon.svg';
-import searchIcon from '../assets/images/search-icon.svg';
-import trashIcon from '../assets/images/trash-icon.svg';
+import Details from "../components/Details";
+import plusIcon from "../assets/images/plus-icon.svg";
+import searchIcon from "../assets/images/search-icon.svg";
+import trashIcon from "../assets/images/trash-icon.svg";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { Button } from '@mui/material';
-import DeleteDialog from '../components/DeleteDialog';
-const Properties = ({  holders, uploads, isLoading, isHoldersLoading, isUploadsLoading }) => {
-  const [holder, setHolder] = useState(null);
-  const [selectedUpload, setSelectedUpload] = useState(null);
-  const [searchControl, setSearchControl] = useState('');
+import { Button } from "@mui/material";
+import DeleteDialog from "../components/DeleteDialog";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteProperties,
+  fetchOrganizations,
+  fetchUploadRecords,
+  fetchUploads,
+} from "../redux/Actions/UserSignin";
+import {
+  ResetPropertiesState,
+  ResetUploadState,
+} from "../redux/Slices/UserAuthenticationSlice";
+const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
+  const [searchControl, setSearchControl] = useState("");
   const [isExpansionPanelOpen, setExpansionPanelOpen] = useState(false);
   const [property, setProperty] = useState(null);
-  
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [dialogData, setDialogData] = useState({ title: '', uploadIds: [], propertyIds: [] });
-    const [subtitle, setSubtitle] = useState('');
-    const [properties, setProperties] = useState([
-  {
-         id:1,
-         first_name :  'saba',
-        last_name:'imtiaz',
-         property_type: 'ssss',
-         amount: 2,
-        status: "SUCCESS" ,
-          state: "fl",
-           date_of_last_contact: "11/15/2023",
-  },
-  {
-    id:2,
-    first_name :  'sa444a',
-   last_name:'imti444444z',
-    property_type: 's444ss',
-    amount: 4,
-   status: "SUCCESS" ,
-     state: "fl",
-      date_of_last_contact: "18/15/2023",
-}
-    ]);
-  const selectHolder = (holder) => setHolder(holder);
-  const selectUpload = (upload) => setSelectedUpload(upload);
+  const [dialogData, setDialogData] = useState({
+    title: "",
+    uploadIds: [],
+    propertyIds: [],
+  });
+  const [subtitle, setSubtitle] = useState("");
+
   const [selectedProperties, setSelectedProperties] = useState(new Set());
-  
+  const {
+    organizations,
+    isLoadingOrganizations,
+    uploads,
+    isLoadingUploads,
+    properties,
+  } = useSelector((state) => state.UserAuthentication);
 
-const toggleCheckbox = (id) => {
-  setSelectedProperties((prevSelected) => {
-    const newSelected = new Set(prevSelected);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
-    return newSelected;
-  });
-};
+  const dispatch = useDispatch();
+  const [propertie, setProperties] = useState(properties);
+  useEffect(() => {
+    dispatch(fetchOrganizations());
+  }, [dispatch]);
 
-const toggleSelectAll = () => {
-  setSelectedProperties((prevSelected) => {
-    if (prevSelected.size === properties.length) {
-      return new Set(); // Deselect all
-    } else {
-      return new Set(properties.map((item) => item.id)); // Select all IDs
+  const toggleCheckbox = (id) => {
+    setSelectedProperties((prevSelected) => {
+      const newSelected = new Set(prevSelected);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      return newSelected;
+    });
+  };
+  useEffect(() => {
+    // Reset properties and uploads when the component is mounted or switching tabs
+    dispatch(ResetPropertiesState()); // Reset properties in Redux
+    dispatch(ResetUploadState()); // Reset uploads in Redux
+  }, []);
+  const toggleSelectAll = () => {
+    setSelectedProperties((prevSelected) => {
+      if (prevSelected.size === properties.length) {
+        return new Set(); // Deselect all
+      } else {
+        return new Set(properties.map((item) => item.id)); // Select all IDs
+      }
+    });
+  };
+  useEffect(() => {
+    const selectAllCheckbox = document.querySelector(
+      "thead input[type='checkbox']"
+    );
+    if (selectAllCheckbox) {
+      selectAllCheckbox.indeterminate =
+        selectedProperties.size > 0 &&
+        selectedProperties.size < properties.length;
+      selectAllCheckbox.checked = selectedProperties.size === properties.length;
     }
-  });
-};
-useEffect(() => {
-  const selectAllCheckbox = document.querySelector("thead input[type='checkbox']");
-  if (selectAllCheckbox) {
-    selectAllCheckbox.indeterminate = selectedProperties.size > 0 && selectedProperties.size < properties.length;
-    selectAllCheckbox.checked = selectedProperties.size === properties.length;
-  }
-}, [selectedProperties, properties.length]);
+  }, [selectedProperties, properties.length]);
 
   const openDeleteDialogue = (title, ids) => {
     setDialogData({ title, ...ids });
-    setSubtitle('Your subtitle here');
+    setSubtitle("Your subtitle here");
     setIsDeleteDialogOpen(true);
   };
 
@@ -83,10 +93,22 @@ useEffect(() => {
     setIsDeleteDialogOpen(false);
   };
 
-  const handleConfirmDelete = () => {
-    // Implement delete confirmation logic here
-    console.log('Delete confirmed');
-    closeDeleteDialog();
+  const handleConfirmDelete = async () => {
+    try {
+      if (selectedProperties.size > 0 && selectedUpload) {
+        const ids = Array.from(selectedProperties);
+        // Dispatch the delete action with the selected properties' IDs
+        await dispatch(deleteProperties(selectedUpload, ids, selectedUpload));
+
+        // After successful deletion, fetch the updated properties
+
+        // Close the delete dialog
+        closeDeleteDialog();
+      }
+    } catch (error) {
+      console.error("Delete failed", error);
+      // Optionally show an error message
+    }
   };
 
   const onScrolledDown = () => {
@@ -97,93 +119,160 @@ useEffect(() => {
     setExpansionPanelOpen(true);
   };
   useEffect(() => {
-    const selectAllCheckbox = document.querySelector("thead input[type='checkbox']");
+    const selectAllCheckbox = document.querySelector(
+      "thead input[type='checkbox']"
+    );
     if (selectAllCheckbox) {
-      selectAllCheckbox.indeterminate = selectedProperties.size > 0 && selectedProperties.size < properties.length;
+      selectAllCheckbox.indeterminate =
+        selectedProperties.size > 0 &&
+        selectedProperties.size < properties.length;
     }
   }, [selectedProperties, properties.length]);
+
+  const [holder, setHolder] = useState("");
+  const [selectedUpload, setSelectedUpload] = useState("");
+
+  // Handle Holder Selection
+  // In Properties component
+  const selectHolder = (holderId) => {
+    if (!holderId) return; // Don't fetch if no holder selected
+    setHolder(holderId);
+    const requestBody = {
+      sortBy: "createdAt",
+      order: "DSC",
+      holders: [parseInt(holderId)],
+      onlySuccessfulUploads: true,
+    };
+    dispatch(fetchUploads(requestBody));
+    setSelectedUpload(""); // Reset upload selection
+  };
+
+  // Update uploads when data changes
+  useEffect(() => {
+    if (uploads.length > 0 && !selectedUpload) {
+      const firstUploadId = uploads[0].id;
+      setSelectedUpload(firstUploadId);
+      dispatch(fetchUploadRecords(firstUploadId, "")); // Fetch properties for the selected upload
+    } else if (uploads.length === 0) {
+      dispatch(ResetPropertiesState());
+    }
+  }, [uploads]);
+
+  // Handle selected upload change
+  useEffect(() => {
+    if (selectedUpload) {
+      dispatch(fetchUploadRecords(selectedUpload, "")); // Fetch properties for the selected upload
+    } else {
+      dispatch(ResetUploadState());
+      dispatch(ResetPropertiesState()); // Clear properties if no upload is selected
+    }
+  }, [selectedUpload]);
+
+  const handleSearchChange = (e) => {
+    setSearchControl(e.target.value);
+    console.log("searchControl", searchControl);
+    if (selectedUpload && searchControl) {
+      // Construct the request body with search text
+
+      // Dispatch the fetchUploadRecords action
+      dispatch(fetchUploadRecords(selectedUpload, e.target.value));
+    }
+  };
+  useEffect(() => {
+    // Reset properties and uploads when the component is mounted or when switching tabs
+    setProperties([]); // Reset local properties state
+    setSelectedUpload(""); // Reset selected upload state
+    dispatch(ResetPropertiesState()); // Dispatch action to reset properties in Redux
+    dispatch(ResetUploadState()); // Dispatch action to reset uploads in Redux
+  }, []); // This runs when the component is mounted
+
+  console.log("selectedUpload", uploads, properties);
   return (
     <div>
-     <div className=" flex justify-between items-center gap-[3.2rem] mb-[2.4rem]">
-     <h1 class="font-semibold text-2xl leading-7 w-1/10">Properties</h1>
-     <div className="flex flex-wrap items-center gap-4 p-4 b ">
-  {/* Holder Dropdown */}
-  <div className="relative w-56">
-    <div className="relative">
-      <select
-        value={holder}
-        onChange={(e) => selectHolder(e.target.value)}
-        disabled={isHoldersLoading}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg  focus:outline-none bg-white cursor-pointer appearance-none"
-      >
-        <option value="" >
-          {isHoldersLoading ? "Loading..." : "Holder 3"}
-        </option>
-        <option value="" >
-          {isHoldersLoading ? "Loading..." : "Holder 4"}
-        </option>
-        {holders?.length > 0 &&
-          holders.map((holder, index) => (
-            <option value={holder.id} key={index}>
-              {holder.name}
-            </option>
-          ))}
-      </select>
-      {/* Dropdown Icon */}
-      <IoMdArrowDropdown className="absolute right-3 top-3 text-gray-900 pointer-events-none" size={20} />
-    </div>
-  </div>
+      <div className=" flex justify-between items-center gap-[3.2rem] mb-[2.4rem]">
+        <h1 class="font-semibold text-2xl leading-7 w-1/10">Properties</h1>
+        <div className="flex flex-wrap items-center gap-4 p-4 b ">
+          {/* Holder Dropdown */}
+          <div className="relative w-56">
+            <div className="relative">
+              <select
+                value={holder}
+                onChange={(e) => selectHolder(e.target.value)}
+                disabled={isLoadingOrganizations}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none bg-white cursor-pointer appearance-none"
+              >
+                <option value="" disabled>
+                  {isLoadingOrganizations
+                    ? "Loading holders..."
+                    : "Select a Holder"}
+                </option>
+                {organizations?.length > 0 &&
+                  organizations.flatMap((org) =>
+                    org.holders.map((holder) => (
+                      <option value={holder.id} key={holder.id}>
+                        {holder.name}
+                      </option>
+                    ))
+                  )}
+              </select>
+              <IoMdArrowDropdown
+                className="absolute right-3 top-3 text-gray-900 pointer-events-none"
+                size={20}
+              />
+            </div>
+          </div>
 
-  {/* Upload Dropdown */}
-  <div className="relative w-[20rem]">
-    <div className="relative">
-      <select
-        value={selectedUpload}
-        onChange={(e) => selectUpload(e.target.value)}
-        disabled={isUploadsLoading}
-        className="w-full px-4 py-2 border border-gray-300 rounded-md  focus:outline-none bg-white cursor-pointer appearance-none"
-      >
-        <option value="" >
-          {isUploadsLoading ? "Loading..." : "File 1 "}
-        </option>
-        <option value="" >
-          {isUploadsLoading ? "Loading..." : "File 2 "}
-        </option>
-        {uploads?.length > 0 &&
-          uploads.map((file, index) => (
-            <option value={file.id} key={index}>
-              {file.file_name}
-            </option>
-          ))}
-      </select>
-      {/* Dropdown Icon */}
-      <IoMdArrowDropdown className="absolute right-3 top-3 text-gray-900 pointer-events-none" size={20} />
-    </div>
-  </div>
-</div>
+          {/* Upload Dropdown */}
+          <div className="relative w-[20rem]">
+            <div className="relative">
+              <select
+                value={selectedUpload}
+                onChange={(e) => setSelectedUpload(e.target.value)}
+                disabled={isLoadingUploads || uploads.length === 0}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none bg-white cursor-pointer appearance-none"
+              >
+                {isLoadingUploads ? (
+                  <option>Loading...</option>
+                ) : uploads.length > 0 ? (
+                  uploads.map((file) => (
+                    <option value={file.id} key={file.id}>
+                      {file.file_name}
+                    </option>
+                  ))
+                ) : (
+                  <option>No files available</option>
+                )}
+              </select>
+              <IoMdArrowDropdown
+                className="absolute right-3 top-3 text-gray-900 pointer-events-none"
+                size={20}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="bg-white rounded-lg">
+      <div className="bg-white rounded-lg p-3">
         <div className=" flex justify-between items-center mb-9">
           <div className="flex gap=[1.2rem] items-center">
-          <Button
-             sx={{
-              backgroundColor: '#007bff', // Primary blue color
-              color: 'white',
-              borderRadius: '10px',
-              padding: '8px 25px',
-              marginRight: '8px',
-              textTransform:"none",
-              '&:hover': {
-                backgroundColor: '#0056b3' 
-              }
-            }}
-            className=" flex   justify-center items-center" 
-          >
+            <Button
+              sx={{
+                backgroundColor: "#007bff", // Primary blue color
+                color: "white",
+                borderRadius: "10px",
+                padding: "8px 25px",
+                marginRight: "8px",
+                textTransform: "none",
+                "&:hover": {
+                  backgroundColor: "#0056b3",
+                },
+              }}
+              className=" flex   justify-center items-center"
+            >
               <img src={plusIcon} alt="import" className="mr-2" />
-           Upload
+              Upload
             </Button>
-  <Button
-               sx={{
+            <Button
+              sx={{
                 backgroundColor: "transparent",
                 color: "gray",
                 borderRadius: "10px",
@@ -191,136 +280,150 @@ useEffect(() => {
                 textTransform: "none",
                 border: "1px solid gray", // Default border color
                 transition: "all 0.3s ease-in-out",
-                marginRight:"0.5rem",
-            
+                marginRight: "0.5rem",
+
                 "&:hover, &:focus": {
                   backgroundColor: "#f0f0f0",
                   border: "1px solid #007bff", // Change border to blue
                   color: "#007bff", // Change text color to blue
                 },
-            
+
                 "&:hover svg path, &:focus svg path": {
                   stroke: "#007bff", // Change SVG stroke to blue
                 },
               }}
-                className={`column-filter-btn gap-2 secondary-btn column-filter-icon flex items-center `}
-                
+              className={`column-filter-btn gap-2 secondary-btn column-filter-icon flex items-center `}
+            >
+              <svg
+                width="16"
+                height="17"
+                viewBox="0 0 16 17"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M6 2.5V14.5M10 2.5V14.5M5.2 2.5H10.8C11.9201 2.5 12.4802 2.5 12.908 2.71799C13.2843 2.90973 13.5903 3.21569 13.782 3.59202C14 4.01984 14 4.5799 14 5.7V11.3C14 12.4201 14 12.9802 13.782 13.408C13.5903 13.7843 13.2843 14.0903 12.908 14.282C12.4802 14.5 11.9201 14.5 10.8 14.5H5.2C4.07989 14.5 3.51984 14.5 3.09202 14.282C2.71569 14.0903 2.40973 13.7843 2.21799 13.408C2 12.9802 2 12.4201 2 11.3V5.7C2 4.57989 2 4.01984 2.21799 3.59202C2.40973 2.90973 2.71569 2.90973 3.09202 2.71799C3.51984 2.5 4.0799 2.5 5.2 2.5Z"
-                    stroke="#7F7F7F"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Column
-              </Button>
-               <Button
-                            sx={{
-                              backgroundColor: "transparent",
-                              color: "gray",
-                              borderRadius: "10px",
-                              padding: "8px 30px",
-                              textTransform: "none",
-                              border: "1px solid gray", // Default border color
-                              transition: "all 0.3s ease-in-out",
-                          
-                              "&:hover, &:focus": {
-                                backgroundColor: "#f0f0f0",
-                                border: "1px solid #007bff", // Change border to blue
-                                color: "#007bff", // Change text color to blue
-                              },
-                          
-                              "&:hover svg path, &:focus svg path": {
-                                stroke: "#007bff", // Change SVG stroke to blue
-                              },
-                       }}
-                              className={`filtermenu-btn secondary-btn gap-2 filter-icon flex items-center`}
+                <path
+                  d="M6 2.5V14.5M10 2.5V14.5M5.2 2.5H10.8C11.9201 2.5 12.4802 2.5 12.908 2.71799C13.2843 2.90973 13.5903 3.21569 13.782 3.59202C14 4.01984 14 4.5799 14 5.7V11.3C14 12.4201 14 12.9802 13.782 13.408C13.5903 13.7843 13.2843 14.0903 12.908 14.282C12.4802 14.5 11.9201 14.5 10.8 14.5H5.2C4.07989 14.5 3.51984 14.5 3.09202 14.282C2.71569 14.0903 2.40973 13.7843 2.21799 13.408C2 12.9802 2 12.4201 2 11.3V5.7C2 4.57989 2 4.01984 2.21799 3.59202C2.40973 2.90973 2.71569 2.90973 3.09202 2.71799C3.51984 2.5 4.0799 2.5 5.2 2.5Z"
+                  stroke="#7F7F7F"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Column
+            </Button>
+            <Button
+              sx={{
+                backgroundColor: "transparent",
+                color: "gray",
+                borderRadius: "10px",
+                padding: "8px 30px",
+                textTransform: "none",
+                border: "1px solid gray", // Default border color
+                transition: "all 0.3s ease-in-out",
 
-                            >
-                              <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                         d="M1.33337 3.56667C1.33337 3.1933 1.33337 3.00661 1.40604 2.86401C1.46995 2.73856 1.57194 2.63658 1.69738 2.57266C1.83999 2.5 2.02667 2.5 2.40004 2.5H13.6C13.9734 2.5 14.1601 2.5 14.3027 2.57266C14.4281 2.63658 14.5301 2.73856 14.594 2.86401C14.6667 3.00661 14.6667 3.1933 14.6667 3.56667V4.01293C14.6667 4.19213 14.6667 4.28173 14.6448 4.36504C14.6254 4.43887 14.5935 4.50882 14.5504 4.57184C14.5018 4.64295 14.4341 4.70164 14.2986 4.819L10.0348 8.51434C9.89936 8.6317 9.83166 8.69038 9.78304 8.76149C9.73995 8.82451 9.70801 8.89446 9.68861 8.96829C9.66671 9.05161 9.66671 9.14121 9.66671 9.3204V12.8056C9.66671 12.936 9.66671 13.0011 9.64568 13.0575C9.6271 13.1073 9.59688 13.1519 9.55754 13.1877C9.51302 13.2281 9.4525 13.2524 9.33145 13.3008L7.06478 14.2074C6.81975 14.3054 6.69724 14.3545 6.59889 14.334C6.51288 14.3161 6.43741 14.265 6.38888 14.1918C6.33337 14.1081 6.33337 13.9762 6.33337 13.7122V9.3204C6.33337 9.14121 6.33337 9.05161 6.31148 8.96829C6.29207 8.89446 6.26013 8.82451 6.21705 8.76149C6.16843 8.69038 6.10072 8.6317 5.9653 8.51434L1.70145 4.819C1.56603 4.70164 1.49832 4.64295 1.4497 4.57184C1.40662 4.50882 1.37468 4.43887 1.35527 4.36504C1.33337 4.28173 1.33337 4.19213 1.33337 4.01293V3.56667Z"
-                           stroke="#7F7F7F"
-                           strokeWidth="1.5"
-                            strokeLinecap="round"
-                           strokeLinejoin="round"
-                                />
-                              </svg>
-                              Filter
-                            </Button>
+                "&:hover, &:focus": {
+                  backgroundColor: "#f0f0f0",
+                  border: "1px solid #007bff", // Change border to blue
+                  color: "#007bff", // Change text color to blue
+                },
 
- <div className="relative  ml-[0.5rem] flex items-center border border-gray-400 rounded-lg px-3 py-2 bg-white w-[20rem]">
-  {/* Search Button */}
-  <button className="mr-2">
-    <img src={searchIcon} alt="search" className="w-5 h-5" />
-  </button>
+                "&:hover svg path, &:focus svg path": {
+                  stroke: "#007bff", // Change SVG stroke to blue
+                },
+              }}
+              className={`filtermenu-btn secondary-btn gap-2 filter-icon flex items-center`}
+            >
+              <svg
+                width="16"
+                height="17"
+                viewBox="0 0 16 17"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1.33337 3.56667C1.33337 3.1933 1.33337 3.00661 1.40604 2.86401C1.46995 2.73856 1.57194 2.63658 1.69738 2.57266C1.83999 2.5 2.02667 2.5 2.40004 2.5H13.6C13.9734 2.5 14.1601 2.5 14.3027 2.57266C14.4281 2.63658 14.5301 2.73856 14.594 2.86401C14.6667 3.00661 14.6667 3.1933 14.6667 3.56667V4.01293C14.6667 4.19213 14.6667 4.28173 14.6448 4.36504C14.6254 4.43887 14.5935 4.50882 14.5504 4.57184C14.5018 4.64295 14.4341 4.70164 14.2986 4.819L10.0348 8.51434C9.89936 8.6317 9.83166 8.69038 9.78304 8.76149C9.73995 8.82451 9.70801 8.89446 9.68861 8.96829C9.66671 9.05161 9.66671 9.14121 9.66671 9.3204V12.8056C9.66671 12.936 9.66671 13.0011 9.64568 13.0575C9.6271 13.1073 9.59688 13.1519 9.55754 13.1877C9.51302 13.2281 9.4525 13.2524 9.33145 13.3008L7.06478 14.2074C6.81975 14.3054 6.69724 14.3545 6.59889 14.334C6.51288 14.3161 6.43741 14.265 6.38888 14.1918C6.33337 14.1081 6.33337 13.9762 6.33337 13.7122V9.3204C6.33337 9.14121 6.33337 9.05161 6.31148 8.96829C6.29207 8.89446 6.26013 8.82451 6.21705 8.76149C6.16843 8.69038 6.10072 8.6317 5.9653 8.51434L1.70145 4.819C1.56603 4.70164 1.49832 4.64295 1.4497 4.57184C1.40662 4.50882 1.37468 4.43887 1.35527 4.36504C1.33337 4.28173 1.33337 4.19213 1.33337 4.01293V3.56667Z"
+                  stroke="#7F7F7F"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Filter
+            </Button>
 
-  {/* Search Input */}
-  <input
-    type="text"
-    value={searchControl}
-    onChange={(e) => setSearchControl(e.target.value)}
-    placeholder="Search keyword"
-    className="w-full outline-none bg-transparent"
-  />
+            <div className="relative  ml-[0.5rem] flex items-center border border-gray-400 rounded-lg px-3 py-2 bg-white w-[20rem]">
+              {/* Search Button */}
+              <button className="mr-2">
+                <img src={searchIcon} alt="search" className="w-5 h-5" />
+              </button>
 
-  {/* Slash Shortcut Indicator */}
-  <div className="absolute right-2 flex justify-center items-center w-5 h-5 border border-gray-200 rounded-md text-gray-500 text-sm bg-gray-100">
-    /
-  </div>
-</div>
+              {/* Search Input */}
+              <input
+                type="text"
+                value={searchControl}
+                onChange={(e) => handleSearchChange(e)} // pass the event object
+                placeholder="Search keyword"
+                className="w-full outline-none bg-transparent"
+              />
+
+              {/* Slash Shortcut Indicator */}
+              <div className="absolute right-2 flex justify-center items-center w-5 h-5 border border-gray-200 rounded-md text-gray-500 text-sm bg-gray-100">
+                /
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-x-4">
-  {selectedProperties.size > 0 && (
-    <div className="selected-row flex items-center">
-      <span>{selectedProperties.size} Selected</span>
-      <button className="flex items-center ml-4" onClick={() => openDeleteDialogue('import', { uploadIds: [1, 2, 3] })}>
-        <img src={trashIcon} alt="delete-icon" className="mr-2" />
-        Delete
-      </button>
+            {selectedProperties.size > 0 && (
+              <div className="selected-row flex items-center">
+                <span>{selectedProperties.size} Selected</span>
+                <button
+                  className="flex items-center ml-4"
+                  onClick={() =>
+                    openDeleteDialogue("import", { uploadIds: [1, 2, 3] })
+                  }
+                >
+                  <img src={trashIcon} alt="delete-icon" className="mr-2" />
+                  Delete
+                </button>
 
-      {isDeleteDialogOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <DeleteDialog
-            data={dialogData}
-            subtitle={subtitle}
-            close={closeDeleteDialog}
-            onConfirmClick={handleConfirmDelete}
-          />
-        </div>
-      )}
-    </div>
-  )}
-</div>
- <div>
-           <Button
-                        sx={{
-                         backgroundColor: "transparent",
-                         color: "gray",
-                         borderRadius: "10px",
-                         padding: "8px 25px",
-                         textTransform: "none",
-                         border: "1px solid gray", // Default border color
-                         transition: "all 0.3s ease-in-out",
-                     
-                         "&:hover, &:focus": {
-                           backgroundColor: "#f0f0f0",
-                           border: "1px solid #007bff", // Change border to blue
-                           color: "#007bff", // Change text color to blue
-                         },
-                     
-                         "&:hover svg path, &:focus svg path": {
-                           stroke: "#007bff", // Change SVG stroke to blue
-                         },
-                       }}
-                         className={`column-filter-btn gap-2 secondary-btn column-filter-icon flex items-center`}
-                        
-                       >
-                          <svg
+                {isDeleteDialogOpen && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <DeleteDialog
+                      data={dialogData}
+                      subtitle={subtitle}
+                      close={closeDeleteDialog}
+                      onConfirmClick={handleConfirmDelete}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div>
+            <Button
+              sx={{
+                backgroundColor: "transparent",
+                color: "gray",
+                borderRadius: "10px",
+                padding: "8px 25px",
+                textTransform: "none",
+                border: "1px solid gray", // Default border color
+                transition: "all 0.3s ease-in-out",
+
+                "&:hover, &:focus": {
+                  backgroundColor: "#f0f0f0",
+                  border: "1px solid #007bff", // Change border to blue
+                  color: "#007bff", // Change text color to blue
+                },
+
+                "&:hover svg path, &:focus svg path": {
+                  stroke: "#007bff", // Change SVG stroke to blue
+                },
+              }}
+              className={`column-filter-btn gap-2 secondary-btn column-filter-icon flex items-center`}
+            >
+              <svg
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
@@ -336,82 +439,126 @@ useEffect(() => {
                   strokeLinejoin="round"
                 />
               </svg>
-                        Download
-                       </Button>
+              Download
+            </Button>
           </div>
         </div>
 
-        <div
-          className="property-table"
-          onScroll={onScrolledDown}
-        >
-          {properties.length > 0 ? (
-          <div className="overflow-x-auto relative ">
-            <table className="min-w-max w-full table-auto border-collapse">
-              <thead  className="sticky top-0 bg-white font-normal" >
-                <tr className="text-gray-500 font-normal text-md">
-                  <th className="px-4 py-2 font-normal" >
-                    <input
-                      type="checkbox"
-                       className="w-5 h-5 cursor-pointer"
-                       indeterminate={selectedProperties.size > 0 && selectedProperties.size < properties.length}
-                       onChange={toggleSelectAll}
-                    />
-                  </th>
-                  <th className="px-4 py-2 font-normal">First Name</th>
-                  <th className="px-4 py-2 font-normal">Last Name</th>
-                  <th className="px-4 py-2 font-normal">Property Type</th>
-                  <th className="px-4 py-2 font-normal">Balance</th>
-                  <th className="px-4 py-2 font-normal">Letter Required</th>
-                  <th className="px-4 py-2 font-normal">Email Required</th>
-                  <th className="px-4 py-2 font-normal">State</th>
-                  <th className="px-4 py-2 font-normal">Report Due</th>
-                  <th className="px-4 py-2 font-normal">Last Activity</th>
-                  <th className="px-4 py-2 font-normal">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                 {properties.map((element,index) => ( 
-                  <tr
-                    key={element.id}
-                    className={`cursor-pointer
-                       transition  duration-200 ease-in-out
-                       ${selectedProperties.has(element.id) ? 'bg-blue-100 bg-opacity-50' : "hover:bg-blue-100 hover:bg-opacity-50"}`}
-                    onDoubleClick={() => openExpansionPanel(element)}
-                  >
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        className="w-5 h-5 cursor-pointer"
-                        checked={selectedProperties.has(element.id)}
-                        onChange={() => toggleCheckbox(element.id)} 
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-black font-medium text-left">{element?.first_name}</td>
-                    <td className="px-4 py-3 text-black font-medium text-left">{element?.last_name}</td>
-                    <td className="px-4 py-3 text-gray-600 text-left"  >{element?.property_type}</td>
-                    <td className="px-4 py-3 text-gray-600 text-left">{element?.amount}</td>
-                    <td className="px-4 py-3 text-gray-600 text-left">Yes</td>
-                    <td className="px-4 py-3 text-gray-600 text-left">No</td>
-                    <td className="px-4 py-3 text-gray-600 text-left">{element?.state}</td>
-                    <td className="px-4 py-3 text-gray-600 text-left">04/18/24</td>
-                    <td className="px-4 py-3 text-gray-600 text-left">{new Date(element?.date_of_last_contact).toLocaleDateString()}</td>
-                    <td className="px-4 py-3  text-left">
-                      <span className={`px-2 py-1 rounded text-white ${element?.status === 'FAILED' ? "text-[#CB0000] bg-blue-100 bg-opacity-50"  : "text-[#3EA102] bg-blue-100 bg-opacity-50" }`}>
-                        {element?.status}
-                      </span>
-
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="property-table" onScroll={onScrolledDown}>
+          {properties.length > 0 && uploads.length > 0 ? (
+            <div className="property-table w-full" onScroll={onScrolledDown}>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse table-fixed">
+                  <thead className="sticky top-0 bg-white">
+                    <tr className="text-gray-500 text-md">
+                      <th className="w-16 px-4 py-3 text-left font-normal">
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 cursor-pointer"
+                          indeterminate={
+                            selectedProperties.size > 0 &&
+                            selectedProperties.size < properties.length
+                          }
+                          onChange={toggleSelectAll}
+                        />
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        First Name
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        Last Name
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        Property Type
+                      </th>
+                      <th className="w-24 px-4 py-3 text-left font-normal">
+                        Balance
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        Letter Required
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        Email Required
+                      </th>
+                      <th className="w-24 px-4 py-3 text-left font-normal">
+                        State
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        Report Due
+                      </th>
+                      <th className="w-32 px-4 py-3 text-left font-normal">
+                        Last Activity
+                      </th>
+                      <th className="w-24 px-4 py-3 text-left font-normal">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {properties.map((element) => (
+                      <tr
+                        key={element.id}
+                        className={`transition duration-200 ease-in-out cursor-pointer
+                  ${
+                    selectedProperties.has(element.id)
+                      ? "bg-blue-100 bg-opacity-50"
+                      : "hover:bg-blue-100 hover:bg-opacity-50"
+                  }`}
+                        onDoubleClick={() => openExpansionPanel(element)}
+                      >
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            className="w-5 h-5 cursor-pointer"
+                            checked={selectedProperties.has(element.id)}
+                            onChange={() => toggleCheckbox(element.id)}
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-black font-medium">
+                          {element?.first_name}
+                        </td>
+                        <td className="px-4 py-3 text-black font-medium">
+                          {element?.last_name}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {element?.property_type}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {element?.amount}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">Yes</td>
+                        <td className="px-4 py-3 text-gray-600">No</td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {element?.state}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">04/18/24</td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {new Date(
+                            element?.date_of_last_contact
+                          ).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`px-2 py-1 rounded text-white ${
+                              element?.status === "FAILED"
+                                ? "text-[#CB0000] bg-blue-100 bg-opacity-50"
+                                : "text-[#3EA102] bg-blue-100 bg-opacity-50"
+                            }`}
+                          >
+                            {element?.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-         ) : (
+          ) : (
             !isLoading && (
               <div className="text-center text-gray-400 font-normal">
-              <h2 className='font-bold'>No Properties Available</h2>
-                <p >Create any new property to display it here.</p>
+                <h2 className="font-bold">No Properties Available</h2>
+                <p>Create any new property to display it here.</p>
               </div>
             )
           )}
@@ -429,15 +576,3 @@ useEffect(() => {
 };
 
 export default Properties;
-
-
-
-
-
-
-
-
-
-
-
-

@@ -9,23 +9,36 @@ import barIcon from "../assets/images/Square-chart-bar-icon.svg";
 import dollarIcon from "../assets/images/Dollar-icon.svg";
 import tagIcon from "../assets/images/tag-icon.svg";
 import buildingIcon from "../assets/images/Building-icon.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrganizations } from "../redux/Actions/UserSignin";
 const Dashboard = ({ isSidebarOpened }) => {
   const [selectedHolder, setSelectedHolder] = useState("");
-  const [holders, setHolders] = useState([]);
+  const { organizations, isLoadingOrganizations } = useSelector(
+    (state) => state.UserAuthentication
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const dispatch = useDispatch();
+  const [holders, setHolders] = useState([]);
 
-  // useEffect(() => {
-  //   fetchHolders();
-  // }, []);
+  useEffect(() => {
+    dispatch(fetchOrganizations());
+  }, [dispatch]);
 
-  // const fetchHolders = async () => {
-  //   try {
-  //     const response = await getOrganizations();
-  //     setHolders(response.data.organizations[0].holders);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
+  useEffect(() => {
+    if (organizations.length > 0) {
+      const extractedHolders = organizations.flatMap((org) =>
+        org.holders.map((holder) => ({ id: holder.id, name: holder.name }))
+      );
+      setHolders(extractedHolders);
+
+      // Set default selected holder if available
+      if (extractedHolders.length > 0) {
+        setSelectedHolder(extractedHolders[0].id);
+      } else {
+        setSelectedHolder(""); // Reset selection if no holders
+      }
+    }
+  }, [organizations]);
 
   const handleChange = (event) => {
     setSelectedHolder(event.target.value);
@@ -63,53 +76,49 @@ const Dashboard = ({ isSidebarOpened }) => {
   };
 
   return (
-    <div className="">
-      <div className=" flex justify-between items-center gap-[3.2rem] mb-[2.4rem]">
-        <h1 className="font-semibold text-2xl leading-7 w-1/10">Dashboard</h1>
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="font-semibold text-2xl">Dashboard</h1>
+        {/* Other header elements */}
       </div>
-      <div
-        className={`bg-white rounded-xl transition-all duration-300 ${
-          isSidebarOpened ? "ml-60" : "ml-16"
-        } overflow-x-hidden`}
-      >
-        <div className="summary-title flex justify-between items-center mb-6">
+      <div className={`bg-white rounded-xl transition-all duration-300 p-4`}>
+        <div className="summary-title flex justify-between items-center mb-6 w-full">
           <h2 className="text-2xl font-semibold">Active Property Summary</h2>
           <div>
-            <FormControl
-              variant="outlined"
-              sx={{ width: "200px", height: "40px" }}
-            >
-              <Select
-                value={selectedHolder}
-                onChange={handleChange}
-                displayEmpty
-                inputProps={{ "aria-label": "Without label" }}
-                sx={{
-                  height: "40px",
-                  padding: "4px",
-                  textAlign: "left",
-                  borderRadius: "5px",
-                  "& .MuiSelect-select": {
-                    paddingLeft: "10px",
-                    color: "gray",
-                  },
-                }}
+            {holders.length > 0 ? (
+              <FormControl
+                variant="outlined"
+                sx={{ width: "200px", height: "40px" }}
               >
-                <MenuItem value="" disabled>
-                  Select Holder
-                </MenuItem>
-                {holders.map((holder, index) => (
-                  <MenuItem key={index} value={holder.name}>
-                    {holder.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <Select
+                  value={selectedHolder}
+                  onChange={handleChange}
+                  sx={{
+                    height: "40px",
+                    padding: "4px",
+                    textAlign: "left",
+                    borderRadius: "5px",
+                    "& .MuiSelect-select": {
+                      paddingLeft: "10px",
+                      color: "gray",
+                    },
+                  }}
+                >
+                  {holders.map((holder) => (
+                    <MenuItem key={holder.id} value={holder.id}>
+                      {holder.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            ) : (
+              <span className="text-gray-500 text-sm">No Holder</span>
+            )}
           </div>
         </div>
 
         <div className="card-container flex gap-4 ">
-          <div className="card green-card p-2 rounded-lg w-72">
+          <div className="card green-card p-2 rounded-lg w-[33%]">
             <div className="flex items-center justify-between">
               <div>
                 <h6 className="text-gray-400">Total Properties</h6>
@@ -120,7 +129,7 @@ const Dashboard = ({ isSidebarOpened }) => {
               </div>
             </div>
           </div>
-          <div className="card blue-card rounded-lg w-72">
+          <div className="card blue-card rounded-lg w-[33%]">
             <div className="flex items-center justify-between">
               <div>
                 <h6 className="text-gray-400 text-left">Total Amount</h6>
@@ -131,7 +140,7 @@ const Dashboard = ({ isSidebarOpened }) => {
               </div>
             </div>
           </div>
-          <div className="card red-card rounded-lg w-72">
+          <div className="card red-card rounded-lg w-[33%]">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-gray-400">Total Owners</span>
@@ -142,7 +151,7 @@ const Dashboard = ({ isSidebarOpened }) => {
               </div>
             </div>
           </div>
-          <div className="card orange-card h-32 p-6 rounded-lg w-72">
+          <div className="card orange-card h-32 p-6 rounded-lg w-[33%]">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-gray-400 text-left">Total States</span>

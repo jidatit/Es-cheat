@@ -36,8 +36,8 @@ const SideBar = ({ menus, isSidebarOpened, setIsSidebarOpened }) => {
 
   return (
     <div
-      className={`fixed top-0 left-0 h-screen transition-all duration-300 bg-white border ${
-        isSidebarOpened ? "w-60" : "w-16"
+      className={`fixed  h-screen transition-all duration-300 bg-white border ${
+        isSidebarOpened ? "w-[250px]" : "w-[64px]"
       }`}
       style={{ overflow: "visible" }}
     >
@@ -106,14 +106,14 @@ const SideBar = ({ menus, isSidebarOpened, setIsSidebarOpened }) => {
         </div>
       </div>
       {/* Sidebar Items */}
-      <ul className="mt-6">
+      <ul className="mt-6 p-2">
         {menus.map((menu, index) => (
           <li key={index}>
             <NavLink
               to={menu.link}
               className={({ isActive }) =>
-                `group flex items-center p-4 text-gray-500 hover:text-blue-500 ${
-                  isActive ? "text-blue-500 m-2 bg-[#EAEFFE] rounded-lg" : ""
+                `group flex items-center p-3 text-gray-500 hover:text-blue-500 ${
+                  isActive ? "text-blue-500  bg-[#EAEFFE] rounded-lg" : ""
                 }`
               }
             >

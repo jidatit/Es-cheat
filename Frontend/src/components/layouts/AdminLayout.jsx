@@ -18,9 +18,13 @@ const AdminLayout = () => {
   const theme = useTheme();
   const [isSidebarOpened, setIsSidebarOpened] = useState(true);
   const menus = [
-    { name: "Home", link: "/dashboard", icon: <HomeIcon /> },
-    { name: "Import", link: "/import", icon: <ImportIcon /> },
-    { name: "Properties", link: "/properties", icon: <PropertiesIcon /> },
+    { name: "Home", link: "/adminLayout/dashboard", icon: <HomeIcon /> },
+    { name: "Import", link: "/adminLayout/import", icon: <ImportIcon /> },
+    {
+      name: "Properties",
+      link: "/adminLayout/properties",
+      icon: <PropertiesIcon />,
+    },
     { name: "Owners", link: "/owners", icon: <OwnersIcon /> },
     {
       name: "Notification",
@@ -47,12 +51,7 @@ const AdminLayout = () => {
   ];
 
   return (
-    <div
-      className="h-screen flex max-w-screen overflow-x-hidden"
-      style={{
-        backgroundColor: theme.palette.background.default,
-      }}
-    >
+    <div className="flex h-screen overflow-hidden bg-gray-100 overflow-y-auto">
       {/* Sidebar */}
       <SideBar
         menus={menus}
@@ -60,18 +59,15 @@ const AdminLayout = () => {
         setIsSidebarOpened={setIsSidebarOpened}
       />
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div
         className={`flex-1 transition-all duration-300 ${
-          isSidebarOpened ? "ml-20" : "ml-64"
+          isSidebarOpened ? "ml-[250px]" : "ml-[64px]"
         }`}
       >
-        {/* Navbar */}
-        <NavBar />
-
         {/* Page Content */}
-        <main className="p-6 overflow-x-hidden">
-          <div className="container mx-auto">
+        <main className="py-6 overflow-x-hidden ">
+          <div className="container mx-auto ">
             <Outlet />
           </div>
         </main>

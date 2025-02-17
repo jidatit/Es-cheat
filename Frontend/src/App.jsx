@@ -17,6 +17,8 @@ import ClientDashboard from "./components/client/ClientDashboard";
 import ClientLayout from "./components/layouts/ClientLayout";
 import AdminLayout from "./components/layouts/AdminLayout";
 import AuthLayout from "./components/layouts/AuthLayout";
+import ImportPage from "./Pages/Import";
+import Properties from "./Pages/PropertyDetails";
 
 export const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -80,87 +82,87 @@ function App() {
 
   return (
     <>
-      <div className="h-auto overflow-hidden">
-        <Router>
-          <Routes>
-            {/* Auth Routes */}
-            <Route element={<AuthLayout />}>
-              <Route
-                path="/"
-                element={
-                  user ? (
-                    <Navigate to={getDashboardPath(user?.userType)} />
-                  ) : (
-                    <Login />
-                  )
-                }
-              />
-
-              <Route
-                path="/login"
-                element={
-                  user ? (
-                    <Navigate to={getDashboardPath(user?.userType)} />
-                  ) : (
-                    <Login />
-                  )
-                }
-              />
-
-              <Route
-                path="/resetPasswordForm"
-                element={
-                  user ? (
-                    <Navigate to={getDashboardPath(user?.userType)} />
-                  ) : (
-                    <ForgotPassword />
-                  )
-                }
-              />
-            </Route>
-
-            <Route path="/notFound" element={<NotFound />} />
-
-            {/* Protected User Dashboard Route */}
+      <Router>
+        <Routes>
+          {/* Auth Routes */}
+          <Route element={<AuthLayout />}>
             <Route
-              path="/clientLayout/*"
+              path="/"
               element={
-                <ProtectedRoute allowedRoles={["client"]} currentUser={user}>
-                  <ClientLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<ClientDashboard />} />
-              <Route path="userInfo" element={<ClientDashboard />} />
-            </Route>
-
-            {/* Protected Admin Dashboard Route */}
-            <Route
-              path="/adminLayout/*"
-              element={
-                <ProtectedRoute allowedRoles={["admin"]} currentUser={user}>
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Dashboard />} />
-              <Route path="import" element={<Import />} />
-              <Route path="properties" element={<PropertyDetails />} />
-              <Route path="*" element={<Navigate to="/notFound" />} />
-            </Route>
-
-            {/* Catch-all route */}
-            <Route
-              path="*"
-              element={
-                <Navigate
-                  to={user ? getDashboardPath(user?.userType) : "/notFound"}
-                />
+                user ? (
+                  <Navigate to={getDashboardPath(user?.userType)} />
+                ) : (
+                  <Login />
+                )
               }
             />
-          </Routes>
-        </Router>
-      </div>
+
+            <Route
+              path="/login"
+              element={
+                user ? (
+                  <Navigate to={getDashboardPath(user?.userType)} />
+                ) : (
+                  <Login />
+                )
+              }
+            />
+
+            <Route
+              path="/resetPasswordForm"
+              element={
+                user ? (
+                  <Navigate to={getDashboardPath(user?.userType)} />
+                ) : (
+                  <ForgotPassword />
+                )
+              }
+            />
+          </Route>
+
+          <Route path="/notFound" element={<NotFound />} />
+
+          {/* Protected User Dashboard Route */}
+          <Route
+            path="/clientLayout/*"
+            element={
+              <ProtectedRoute allowedRoles={["client"]} currentUser={user}>
+                <ClientLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<ClientDashboard />} />
+            <Route path="userInfo" element={<ClientDashboard />} />
+          </Route>
+
+          {/* Protected Admin Dashboard Route */}
+          <Route
+            path="/adminLayout/*"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]} currentUser={user}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="import" element={<ImportPage />} />
+            <Route path="properties" element={<Properties />} />
+            <Route path="*" element={<Navigate to="/notFound" />} />
+          </Route>
+
+          {/* Catch-all route */}
+          <Route
+            path="*"
+            element={
+              <Navigate
+                to={user ? getDashboardPath(user?.userType) : "/notFound"}
+              />
+            }
+          />
+        </Routes>
+      </Router>
+
       <Toaster position="top-right" richColors />
     </>
   );
