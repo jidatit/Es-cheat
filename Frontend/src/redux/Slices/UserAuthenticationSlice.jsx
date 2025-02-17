@@ -79,7 +79,6 @@ const UserAuthenticationSlice = createSlice({
 
     // Filtered Uploads Data
     FetchFilteredUploadsRequest: (state) => {
-      state.properties = [];
       state.isLoadingFilteredUploads = true;
     },
     FetchFilteredUploadsSuccess: (state, action) => {
@@ -93,7 +92,6 @@ const UserAuthenticationSlice = createSlice({
 
     // Properties Data
     FetchPropertiesRequest: (state) => {
-      state.properties = [];
       state.isLoadingProperties = true;
       state.uploads = []; // Reset uploads state when fetching properties
     },
@@ -121,7 +119,6 @@ const UserAuthenticationSlice = createSlice({
     // File Upload Actions
     FileUploadRequest: (state) => {
       state.isUploadingFile = true;
-      state.properties = [];
       state.error = null;
       state.uploads = []; // Reset uploads state when uploading a file
     },

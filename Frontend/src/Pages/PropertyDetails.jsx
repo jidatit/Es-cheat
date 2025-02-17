@@ -18,6 +18,7 @@ import {
   ResetPropertiesState,
   ResetUploadState,
 } from "../redux/Slices/UserAuthenticationSlice";
+import { debounce } from "lodash"; // or any other debounce utility
 const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
   const [searchControl, setSearchControl] = useState("");
   const [isExpansionPanelOpen, setExpansionPanelOpen] = useState(false);
@@ -45,7 +46,21 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
   useEffect(() => {
     dispatch(fetchOrganizations());
   }, [dispatch]);
+  useEffect(() => {
+    if (organizations.length > 0) {
+      const extractedHolders = organizations.flatMap((org) =>
+        org.holders.map((holder) => ({ id: holder.id, name: holder.name }))
+      );
+      setHolder(extractedHolders);
 
+      // Set default selected holder if available
+      if (extractedHolders.length > 0) {
+        setHolder(extractedHolders[0].id);
+      } else {
+        setHolder(""); // Reset selection if no holders
+      }
+    }
+  }, []);
   const toggleCheckbox = (id) => {
     setSelectedProperties((prevSelected) => {
       const newSelected = new Set(prevSelected);
@@ -169,15 +184,16 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
   }, [selectedUpload]);
 
   const handleSearchChange = (e) => {
-    setSearchControl(e.target.value);
-    console.log("searchControl", searchControl);
-    if (selectedUpload && searchControl) {
-      // Construct the request body with search text
-
-      // Dispatch the fetchUploadRecords action
-      dispatch(fetchUploadRecords(selectedUpload, e.target.value));
+    const value = e.target.value;
+    setSearchControl(value);
+    if (selectedUpload && value) {
+      debouncedFetch(value);
     }
   };
+
+  const debouncedFetch = debounce((searchText) => {
+    dispatch(fetchUploadRecords(selectedUpload, searchText));
+  }, 300); // 300ms delay
   useEffect(() => {
     // Reset properties and uploads when the component is mounted or when switching tabs
     setProperties([]); // Reset local properties state

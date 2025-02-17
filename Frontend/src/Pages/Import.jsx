@@ -93,7 +93,11 @@ const ImportPage = () => {
   const { holders, isHoldersLoading } = useSelector(
     (state) => state.UserAuthentication
   );
+  useEffect(() => {
+    // Reset properties and uploads when the component is mounted or switching tabs
 
+    dispatch(ResetUploadState()); // Reset uploads in Redux
+  }, []);
   useEffect(() => {
     dispatch(fetchOrganizations());
   }, [dispatch]);
