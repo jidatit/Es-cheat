@@ -110,3 +110,22 @@ export const fetchUploadRecordsAPI = async (uploadId, searchText) => {
     throw error;
   }
 };
+export const deleteUploadAPI = async (uploadId) => {
+  try {
+    const token = Cookies.get("token"); // Get JWT token
+    const apiUrl = `http://52.32.15.59:8000/v1/upload?ids=${uploadId}`;
+
+    const response = await axios.delete(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    throw error;
+  }
+};

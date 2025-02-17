@@ -11,6 +11,7 @@ import { IoArrowDownOutline } from "react-icons/io5";
 import DeleteDialog from "../components/DeleteDialog";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  deleteUpload,
   fetchFilteredUploads,
   fetchOrganizations,
   fetchUploads,
@@ -123,19 +124,19 @@ const ImportPage = () => {
     setIsFilterMenuOpen(!isFilterMenuOpen);
   };
 
+  const closeDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
   const openDeleteDialogue = (title, ids) => {
-    setDialogData({ title, ...ids });
+    setDialogData({ title, uploadIds: Array.from(ids) }); // Convert Set to Array
     setSubtitle("Your subtitle here");
     setIsDeleteDialogOpen(true);
   };
 
-  const closeDeleteDialog = () => {
-    setIsDeleteDialogOpen(false);
-  };
-
-  const handleConfirmDelete = () => {
-    // Implement delete confirmation logic here
-    console.log("Delete confirmed");
+  const handleConfirmDelete = async () => {
+    if (dialogData.uploadIds.length > 0) {
+      await dispatch(deleteUpload(dialogData.uploadIds)); // Pass the array of IDs
+    }
     closeDeleteDialog();
   };
 
@@ -420,9 +421,8 @@ const ImportPage = () => {
                 <span>{selectedUploads.size} Selected</span>
                 <button
                   className="delete-btn flex items-center ml-4"
-                  //  onClick={openDeleteDialogue}
-                  onClick={() =>
-                    openDeleteDialogue("import", { uploadIds: [1, 2, 3] })
+                  onClick={
+                    () => openDeleteDialogue("Delete Upload", selectedUploads) // Pass the Set directly
                   }
                 >
                   <img src={Trash} alt="delete-icon" className="mr-2" />
@@ -562,10 +562,10 @@ const ImportPage = () => {
                                   `${element?.uploader?.first_name} ${element?.uploader?.last_name}`}
                                 {column.name === "Status" && (
                                   <span
-                                    className={`px-2 py-1 rounded text-white ${
+                                    className={`px-2 py-1 rounded font-semibold   ${
                                       element.status === "FAILED"
-                                        ? "text-[#CB0000] bg-blue-100 bg-opacity-50"
-                                        : "text-[#3EA102] bg-blue-100 bg-opacity-50"
+                                        ? "text-[#CB0000] bg-[#D8E7E5] bg-opacity-50"
+                                        : "text-[#3EA102] bg-[#D8E7E5] bg-opacity-50"
                                     }`}
                                   >
                                     {element?.status}

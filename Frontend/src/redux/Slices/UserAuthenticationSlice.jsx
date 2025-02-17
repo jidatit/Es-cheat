@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { deleteUpload } from "../Actions/UserSignin";
 
 const initialState = {
   user: null,
@@ -151,6 +152,23 @@ const UserAuthenticationSlice = createSlice({
       state.isDeleting = false;
       state.deleteError = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(deleteUpload.pending, (state) => {
+        state.isDeleting = true;
+        state.deleteError = null;
+      })
+      .addCase(deleteUpload.fulfilled, (state, action) => {
+        state.isDeleting = false;
+        state.uploads = state.uploads.filter(
+          (upload) => upload.id !== action.payload
+        );
+      })
+      .addCase(deleteUpload.rejected, (state, action) => {
+        state.isDeleting = false;
+        state.deleteError = action.payload;
+      });
   },
 });
 

@@ -107,17 +107,29 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
   const closeDeleteDialog = () => {
     setIsDeleteDialogOpen(false);
   };
-
+  useEffect(() => {
+    // Reset properties and uploads when the component is mounted or switching tabs
+    dispatch(ResetPropertiesState());
+    dispatch(ResetUploadState()); // Reset uploads in Redux
+  }, []);
   const handleConfirmDelete = async () => {
     try {
       if (selectedProperties.size > 0 && selectedUpload) {
         const ids = Array.from(selectedProperties);
         // Dispatch the delete action with the selected properties' IDs
-        await dispatch(deleteProperties(selectedUpload, ids, selectedUpload));
+        await dispatch(
+          deleteProperties(
+            selectedUpload,
+            ids,
+            selectedUpload,
+            setSelectedProperties
+          )
+        );
 
         // After successful deletion, fetch the updated properties
 
         // Close the delete dialog
+
         closeDeleteDialog();
       }
     } catch (error) {

@@ -62,12 +62,14 @@ const AdminLayout = () => {
       {/* Main Content Area */}
       <div
         className={`flex-1 transition-all duration-300 ${
-          isSidebarOpened ? "ml-[250px]" : "ml-[64px]"
+          isSidebarOpened ? "ml-[270px]" : "ml-[64px]"
         }`}
       >
         {/* Page Content */}
-        <main className="py-6 overflow-x-hidden ">
-          <div className="container mx-auto ">
+        <main className="py-6 overflow-x-hidden">
+          <div className="w-full px-4">
+            {" "}
+            {/* Changed from container mx-auto */}
             <Outlet />
           </div>
         </main>

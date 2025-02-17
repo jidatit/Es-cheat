@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import {
+  deleteUploadAPI,
   fetchOrganizationsAPI,
   fetchUploadRecordsAPI,
   fetchUploadsAPI,
@@ -31,6 +32,7 @@ import {
 } from "../Slices/UserAuthenticationSlice";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 export const clientSigninS1 =
   (formData, setContinueLoading) => async (dispatch) => {
     dispatch(UserSignInRequest());
@@ -161,7 +163,8 @@ export const fetchUploadRecords =
     }
   };
 export const deleteProperties =
-  (uploadId, ids, selectedUpload) => async (dispatch) => {
+  (uploadId, ids, selectedUpload, setSelectedProperties) =>
+  async (dispatch) => {
     dispatch(DeletePropertiesRequest());
     const token = Cookies.get("token"); // Get JWT token
     try {
@@ -177,7 +180,7 @@ export const deleteProperties =
       );
       if (response.status === 200) {
         dispatch(fetchUploadRecords(selectedUpload));
-
+        setSelectedProperties(new Set());
         dispatch(DeletePropertiesSuccess());
         return response.data;
       }
@@ -186,3 +189,19 @@ export const deleteProperties =
       throw error;
     }
   };
+export const deleteUpload = createAsyncThunk(
+  "uploads/deleteUpload",
+  async (uploadId, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await deleteUploadAPI(uploadId);
+      if (response.code === 200) {
+        dispatch(fetchUploads()); // Refresh uploads after deletion
+
+        return uploadId;
+      }
+      return rejectWithValue(response.message);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
