@@ -33,21 +33,6 @@ const AdminLayout = () => {
     },
     { name: "Reports", link: "/reports", icon: <ReportsIcon /> },
     { name: "Claims", link: "/claims", icon: <ClaimsIcon /> },
-    {
-      name: "Pricing",
-      link: "/adminLayout/addPricingPlan",
-      icon: <FaMoneyCheckDollar />,
-    },
-    {
-      name: "UserInfo",
-      link: "/adminLayout/userInfo",
-      icon: <MdOutlineGroups />,
-    },
-    {
-      name: "Orders",
-      link: "/adminLayout/orders",
-      icon: <FaMoneyCheckDollar />,
-    },
   ];
 
   return (

@@ -182,6 +182,7 @@ export const deleteProperties =
         dispatch(fetchUploadRecords(selectedUpload));
         setSelectedProperties(new Set());
         dispatch(DeletePropertiesSuccess());
+        toast.success("Properties deleted successfully....");
         return response.data;
       }
     } catch (error) {
@@ -191,12 +192,14 @@ export const deleteProperties =
   };
 export const deleteUpload = createAsyncThunk(
   "uploads/deleteUpload",
-  async (uploadId, { dispatch, rejectWithValue }) => {
+  async (uploadId, setSelectedUploads, { dispatch, rejectWithValue }) => {
     try {
       const response = await deleteUploadAPI(uploadId);
       if (response.code === 200) {
-        dispatch(fetchUploads()); // Refresh uploads after deletion
-
+        const filterData = { sortBy: "createdAt", order: "DESC", search: "" };
+        setSelectedUploads(new Set());
+        dispatch(fetchUploads(filterData));
+        toast.success("Upload deleted successfully....");
         return uploadId;
       }
       return rejectWithValue(response.message);

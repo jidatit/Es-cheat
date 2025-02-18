@@ -18,8 +18,12 @@ import {
   ResetPropertiesState,
   ResetUploadState,
 } from "../redux/Slices/UserAuthenticationSlice";
+import { Select, MenuItem, FormControl } from "@mui/material";
+import { IoMdCheckmark } from "react-icons/io";
+
 import { debounce } from "lodash"; // or any other debounce utility
-const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
+import { Check } from "lucide-react";
+const Properties = ({ isLoading }) => {
   const [searchControl, setSearchControl] = useState("");
   const [isExpansionPanelOpen, setExpansionPanelOpen] = useState(false);
   const [property, setProperty] = useState(null);
@@ -40,9 +44,20 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
     isLoadingUploads,
     properties,
   } = useSelector((state) => state.UserAuthentication);
-
+  const [searchText, setSearchText] = useState("");
+  const [filteredProperties, setFilteredProperties] = useState(properties);
   const dispatch = useDispatch();
   const [propertie, setProperties] = useState(properties);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    if (!disabled) setAnchorEl(event.currentTarget);
+  };
+  const handleClose = (optionValue) => {
+    setAnchorEl(null);
+    if (optionValue) onChange(optionValue);
+  };
   useEffect(() => {
     dispatch(fetchOrganizations());
   }, [dispatch]);
@@ -60,7 +75,43 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
         setHolder(""); // Reset selection if no holders
       }
     }
-  }, []);
+  }, [organizations]);
+  useEffect(() => {
+    if (!searchText.trim()) {
+      setFilteredProperties(properties);
+      return;
+    }
+
+    const searchLower = searchText.toLowerCase();
+    const filtered = properties.filter((property) => {
+      // Search through all relevant fields
+      return (
+        property.first_name?.toLowerCase().includes(searchLower) ||
+        property.last_name?.toLowerCase().includes(searchLower) ||
+        property.property_type?.toLowerCase().includes(searchLower) ||
+        property.amount?.toString().toLowerCase().includes(searchLower) ||
+        property.state?.toLowerCase().includes(searchLower) ||
+        property.status?.toLowerCase().includes(searchLower) ||
+        new Date(property.date_of_last_contact)
+          .toLocaleDateString()
+          .toLowerCase()
+          .includes(searchLower)
+      );
+    });
+
+    setFilteredProperties(filtered);
+  }, [searchText, properties]);
+
+  const toggleSelectAll = () => {
+    setSelectedProperties((prevSelected) => {
+      if (prevSelected.size === properties.length) {
+        return new Set(); // Deselect all
+      } else {
+        return new Set(properties.map((item) => item.id)); // Select all IDs
+      }
+    });
+  };
+
   const toggleCheckbox = (id) => {
     setSelectedProperties((prevSelected) => {
       const newSelected = new Set(prevSelected);
@@ -77,15 +128,7 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
     dispatch(ResetPropertiesState()); // Reset properties in Redux
     dispatch(ResetUploadState()); // Reset uploads in Redux
   }, []);
-  const toggleSelectAll = () => {
-    setSelectedProperties((prevSelected) => {
-      if (prevSelected.size === properties.length) {
-        return new Set(); // Deselect all
-      } else {
-        return new Set(properties.map((item) => item.id)); // Select all IDs
-      }
-    });
-  };
+
   useEffect(() => {
     const selectAllCheckbox = document.querySelector(
       "thead input[type='checkbox']"
@@ -186,26 +229,43 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
   }, [uploads]);
 
   // Handle selected upload change
-  useEffect(() => {
-    if (selectedUpload) {
-      dispatch(fetchUploadRecords(selectedUpload, "")); // Fetch properties for the selected upload
-    } else {
-      dispatch(ResetUploadState());
-      dispatch(ResetPropertiesState()); // Clear properties if no upload is selected
-    }
-  }, [selectedUpload]);
+  // useEffect(() => {
+  //   if (selectedUpload) {
+  //     dispatch(fetchUploadRecords(selectedUpload, "")); // Fetch properties for the selected upload
+  //   } else {
+  //     dispatch(ResetUploadState());
+  //     dispatch(ResetPropertiesState()); // Clear properties if no upload is selected
+  //   }
+  // }, [selectedUpload]);
+
+  const debouncedFetch = debounce((value) => {
+    dispatch(fetchUploadRecords(selectedUpload, value));
+  }, 500);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchControl(value);
-    if (selectedUpload && value) {
+
+    if (selectedUpload) {
+      // Cancel any pending debounced searches
+      debouncedFetch.cancel();
+
+      // if (value.trim() === "") {
+      //   // Immediate fetch for empty search - no debounce
+      // dispatch(fetchUploadRecords(selectedUpload, value));
+      // } else {
+      // Debounced fetch for non-empty searches
       debouncedFetch(value);
+      // }
     }
   };
 
-  const debouncedFetch = debounce((searchText) => {
-    dispatch(fetchUploadRecords(selectedUpload, searchText));
-  }, 300); // 300ms delay
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, []);
   useEffect(() => {
     // Reset properties and uploads when the component is mounted or when switching tabs
     setProperties([]); // Reset local properties state
@@ -214,69 +274,131 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
     dispatch(ResetUploadState()); // Dispatch action to reset uploads in Redux
   }, []); // This runs when the component is mounted
 
-  console.log("selectedUpload", uploads, properties);
   return (
     <div>
       <div className=" flex justify-between items-center gap-[3.2rem] mb-[2.4rem]">
         <h1 class="font-semibold text-2xl leading-7 w-1/10">Properties</h1>
-        <div className="flex flex-wrap items-center gap-4 p-4 b ">
+        <div className="flex flex-wrap items-center gap-4 p-4">
           {/* Holder Dropdown */}
-          <div className="relative w-56">
-            <div className="relative">
-              <select
-                value={holder}
-                onChange={(e) => selectHolder(e.target.value)}
-                disabled={isLoadingOrganizations}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none bg-white cursor-pointer appearance-none"
-              >
-                <option value="" disabled>
-                  {isLoadingOrganizations
+          <FormControl className="w-56">
+            <Select
+              value={holder}
+              onChange={(e) => selectHolder(e.target.value)}
+              disabled={isLoadingOrganizations}
+              className="w-full bg-white font-poppins"
+              MenuProps={{
+                PaperProps: {
+                  className: "mt-2",
+                },
+              }}
+              displayEmpty
+              renderValue={(selected) => {
+                if (!selected) {
+                  return isLoadingOrganizations
                     ? "Loading holders..."
-                    : "Select a Holder"}
-                </option>
-                {organizations?.length > 0 &&
-                  organizations.flatMap((org) =>
-                    org.holders.map((holder) => (
-                      <option value={holder.id} key={holder.id}>
-                        {holder.name}
-                      </option>
-                    ))
-                  )}
-              </select>
-              <IoMdArrowDropdown
-                className="absolute right-3 top-3 text-gray-900 pointer-events-none"
-                size={20}
-              />
-            </div>
-          </div>
-
-          {/* Upload Dropdown */}
-          <div className="relative w-[20rem]">
-            <div className="relative">
-              <select
-                value={selectedUpload}
-                onChange={(e) => setSelectedUpload(e.target.value)}
-                disabled={isLoadingUploads || uploads.length === 0}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none bg-white cursor-pointer appearance-none"
-              >
-                {isLoadingUploads ? (
-                  <option>Loading...</option>
-                ) : uploads.length > 0 ? (
-                  uploads.map((file) => (
-                    <option value={file.id} key={file.id}>
-                      {file.file_name}
-                    </option>
+                    : "Select a Holder";
+                }
+                const selectedHolder = organizations
+                  ?.flatMap((org) => org.holders)
+                  .find((h) => h.id === selected);
+                return selectedHolder?.name || "";
+              }}
+            >
+              <MenuItem value="" disabled>
+                {isLoadingOrganizations
+                  ? "Loading holders..."
+                  : "Select a Holder"}
+              </MenuItem>
+              {organizations?.length > 0 &&
+                organizations.flatMap((org) =>
+                  org.holders.map((holderOption) => (
+                    <MenuItem
+                      value={holderOption.id}
+                      key={holderOption.id}
+                      className={`group hover:bg-blue-50 ${
+                        holder === holderOption.id
+                          ? "bg-blue-700 hover:bg-blue-500"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full px-2 py-1">
+                        <span
+                          className={`flex-1 font-poppins ${
+                            holder === holderOption.id
+                              ? "text-blue-600"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          {holderOption.name}
+                        </span>
+                        <div className="flex-shrink-0 ml-8">
+                          {holder === holderOption.id && (
+                            <Check className="w-5 h-5 text-blue-500" />
+                          )}
+                        </div>
+                      </div>
+                    </MenuItem>
                   ))
-                ) : (
-                  <option>No files available</option>
                 )}
-              </select>
-              <IoMdArrowDropdown
-                className="absolute right-3 top-3 text-gray-900 pointer-events-none"
-                size={20}
-              />
-            </div>
-          </div>
+            </Select>
+          </FormControl>
+          {/* Upload Dropdown */}
+          <FormControl className="w-80">
+            <Select
+              value={selectedUpload}
+              onChange={(e) => setSelectedUpload(e.target.value)}
+              disabled={isLoadingUploads || uploads.length === 0}
+              className="w-full bg-white"
+              MenuProps={{
+                PaperProps: {
+                  className: "mt-2",
+                },
+              }}
+              displayEmpty
+              renderValue={(selected) => {
+                if (isLoadingUploads) return "Loading...";
+                if (uploads.length === 0) return "No files available";
+                if (!selected) return "Select a file";
+
+                const selectedFile = uploads.find(
+                  (file) => file.id === selected
+                );
+                return selectedFile?.file_name || "";
+              }}
+            >
+              {isLoadingUploads ? (
+                <MenuItem value="">Loading...</MenuItem>
+              ) : uploads.length > 0 ? (
+                uploads.map((file) => (
+                  <MenuItem
+                    value={file.id}
+                    key={file.id}
+                    className={`flex items-center justify-between ${
+                      selectedUpload === file.id ? "bg-blue-50" : ""
+                    }`}
+                  >
+                    {" "}
+                    <div className="flex items-center justify-between w-full px-2">
+                      <span
+                        className={`flex-1 font-poppins ${
+                          selectedUpload === file.id
+                            ? "text-blue-600"
+                            : "text-gray-900"
+                        }`}
+                      >
+                        {file.file_name}
+                      </span>
+                      {selectedUpload === file.id && (
+                        <IoMdCheckmark className="text-blue-500" size={20} />
+                      )}
+                    </div>
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="">No files available</MenuItem>
+              )}
+            </Select>
+          </FormControl>
         </div>
       </div>
       <div className="bg-white rounded-lg p-3">
@@ -393,204 +515,224 @@ const Properties = ({ isLoading, isHoldersLoading, isUploadsLoading }) => {
                 placeholder="Search keyword"
                 className="w-full outline-none bg-transparent"
               />
-
+              {/* <input
+                type="text"
+                placeholder="Search in all fields..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="w-full outline-none bg-transparent"
+              /> */}
               {/* Slash Shortcut Indicator */}
               <div className="absolute right-2 flex justify-center items-center w-5 h-5 border border-gray-200 rounded-md text-gray-500 text-sm bg-gray-100">
                 /
               </div>
             </div>
           </div>
+          <div className="flex gap-x-4">
+            <div className="flex items-center ">
+              {selectedProperties.size > 0 && (
+                <div className="selected-row flex items-center">
+                  <span className="text-[14px] text-gray-600">
+                    {selectedProperties.size} Selected
+                  </span>
+                  <button
+                    className="delete-btn flex items-center ml-4 border-2 text-sm border-red-400 px-4 py-1.5 rounded-lg"
+                    onClick={() =>
+                      openDeleteDialogue("import", { uploadIds: [1, 2, 3] })
+                    }
+                  >
+                    <img src={trashIcon} alt="delete-icon" className="mr-2" />
+                    Delete
+                  </button>
 
-          <div className="flex items-center gap-x-4">
-            {selectedProperties.size > 0 && (
-              <div className="selected-row flex items-center">
-                <span>{selectedProperties.size} Selected</span>
-                <button
-                  className="flex items-center ml-4"
-                  onClick={() =>
-                    openDeleteDialogue("import", { uploadIds: [1, 2, 3] })
-                  }
-                >
-                  <img src={trashIcon} alt="delete-icon" className="mr-2" />
-                  Delete
-                </button>
+                  {isDeleteDialogOpen && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                      <DeleteDialog
+                        data={dialogData}
+                        subtitle={subtitle}
+                        close={closeDeleteDialog}
+                        onConfirmClick={handleConfirmDelete}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div>
+              <Button
+                sx={{
+                  backgroundColor: "transparent",
+                  color: "gray",
+                  borderRadius: "10px",
+                  padding: "8px 25px",
+                  textTransform: "none",
+                  border: "1px solid gray", // Default border color
+                  transition: "all 0.3s ease-in-out",
 
-                {isDeleteDialogOpen && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <DeleteDialog
-                      data={dialogData}
-                      subtitle={subtitle}
-                      close={closeDeleteDialog}
-                      onConfirmClick={handleConfirmDelete}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <div>
-            <Button
-              sx={{
-                backgroundColor: "transparent",
-                color: "gray",
-                borderRadius: "10px",
-                padding: "8px 25px",
-                textTransform: "none",
-                border: "1px solid gray", // Default border color
-                transition: "all 0.3s ease-in-out",
+                  "&:hover, &:focus": {
+                    backgroundColor: "#f0f0f0",
+                    border: "1px solid #007bff", // Change border to blue
+                    color: "#007bff", // Change text color to blue
+                  },
 
-                "&:hover, &:focus": {
-                  backgroundColor: "#f0f0f0",
-                  border: "1px solid #007bff", // Change border to blue
-                  color: "#007bff", // Change text color to blue
-                },
-
-                "&:hover svg path, &:focus svg path": {
-                  stroke: "#007bff", // Change SVG stroke to blue
-                },
-              }}
-              className={`column-filter-btn gap-2 secondary-btn column-filter-icon flex items-center`}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+                  "&:hover svg path, &:focus svg path": {
+                    stroke: "#007bff", // Change SVG stroke to blue
+                  },
+                }}
+                className={`column-filter-btn gap-2 secondary-btn column-filter-icon flex items-center`}
               >
-                <path
-                  d="M2.66634 10.8282C1.86235 10.29 1.33301 9.37347 1.33301 8.33333C1.33301 6.77095 2.52735 5.48753 4.05284 5.34625C4.36488 3.44809 6.01317 2 7.99967 2C9.98618 2 11.6345 3.44809 11.9465 5.34625C13.472 5.48753 14.6663 6.77095 14.6663 8.33333C14.6663 9.37347 14.137 10.29 13.333 10.8282M5.33301 11.3333L7.99967 14M7.99967 14L10.6663 11.3333M7.99967 14V8"
-                  stroke="black"
-                  strokeOpacity="0.5"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Download
-            </Button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2.66634 10.8282C1.86235 10.29 1.33301 9.37347 1.33301 8.33333C1.33301 6.77095 2.52735 5.48753 4.05284 5.34625C4.36488 3.44809 6.01317 2 7.99967 2C9.98618 2 11.6345 3.44809 11.9465 5.34625C13.472 5.48753 14.6663 6.77095 14.6663 8.33333C14.6663 9.37347 14.137 10.29 13.333 10.8282M5.33301 11.3333L7.99967 14M7.99967 14L10.6663 11.3333M7.99967 14V8"
+                    stroke="black"
+                    strokeOpacity="0.5"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Download
+              </Button>
+            </div>
           </div>
         </div>
-
-        <div className="property-table" onScroll={onScrolledDown}>
-          {properties.length > 0 && uploads.length > 0 ? (
-            <div className="property-table w-full" onScroll={onScrolledDown}>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse table-fixed">
-                  <thead className="sticky top-0 bg-white">
-                    <tr className="text-gray-500 text-md">
-                      <th className="w-16 px-4 py-3 text-left font-normal">
-                        <input
-                          type="checkbox"
-                          className="w-5 h-5 cursor-pointer"
-                          indeterminate={
-                            selectedProperties.size > 0 &&
-                            selectedProperties.size < properties.length
-                          }
-                          onChange={toggleSelectAll}
-                        />
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        First Name
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        Last Name
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        Property Type
-                      </th>
-                      <th className="w-24 px-4 py-3 text-left font-normal">
-                        Balance
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        Letter Required
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        Email Required
-                      </th>
-                      <th className="w-24 px-4 py-3 text-left font-normal">
-                        State
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        Report Due
-                      </th>
-                      <th className="w-32 px-4 py-3 text-left font-normal">
-                        Last Activity
-                      </th>
-                      <th className="w-24 px-4 py-3 text-left font-normal">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {properties.map((element) => (
-                      <tr
-                        key={element.id}
-                        className={`transition duration-200 ease-in-out cursor-pointer
+        {isLoadingUploads ? (
+          <>
+            <div className=" ">
+              {" "}
+              <div className="flex items-center justify-center h-[35vh] loading-spinner">
+                <div className="w-16 h-16 border-4 rounded-full border-t-transparent border-blue-600 animate-spin"></div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="property-table" onScroll={onScrolledDown}>
+            {properties.length > 0 && uploads.length > 0 ? (
+              <div className="property-table w-full" onScroll={onScrolledDown}>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse table-fixed">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className="text-gray-500 text-md">
+                        <th className="w-16 px-4 py-3 text-left font-normal">
+                          <input
+                            type="checkbox"
+                            className="w-5 h-5 cursor-pointer"
+                            indeterminate={
+                              selectedProperties.size > 0 &&
+                              selectedProperties.size < properties.length
+                            }
+                            onChange={toggleSelectAll}
+                          />
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          First Name
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          Last Name
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          Property Type
+                        </th>
+                        <th className="w-24 px-4 py-3 text-left font-normal">
+                          Balance
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          Letter Required
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          Email Required
+                        </th>
+                        <th className="w-24 px-4 py-3 text-left font-normal">
+                          State
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          Report Due
+                        </th>
+                        <th className="w-32 px-4 py-3 text-left font-normal">
+                          Last Activity
+                        </th>
+                        <th className="w-24 px-4 py-3 text-left font-normal">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {properties.map((element) => (
+                        <tr
+                          key={element.id}
+                          className={`transition duration-200 ease-in-out cursor-pointer
                   ${
                     selectedProperties.has(element.id)
                       ? "bg-blue-100 bg-opacity-50"
                       : "hover:bg-blue-100 hover:bg-opacity-50"
                   }`}
-                        onDoubleClick={() => openExpansionPanel(element)}
-                      >
-                        <td className="px-4 py-3">
-                          <input
-                            type="checkbox"
-                            className="w-5 h-5 cursor-pointer"
-                            checked={selectedProperties.has(element.id)}
-                            onChange={() => toggleCheckbox(element.id)}
-                          />
-                        </td>
-                        <td className="px-4 py-3 text-black font-medium">
-                          {element?.first_name}
-                        </td>
-                        <td className="px-4 py-3 text-black font-medium">
-                          {element?.last_name}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {element?.property_type}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {element?.amount}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">Yes</td>
-                        <td className="px-4 py-3 text-gray-600">No</td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {element?.state}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">04/18/24</td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {new Date(
-                            element?.date_of_last_contact
-                          ).toLocaleDateString()}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`px-2 py-1 rounded text-white ${
-                              element?.status === "FAILED"
-                                ? "text-[#CB0000] bg-blue-100 bg-opacity-50"
-                                : "text-[#3EA102] bg-blue-100 bg-opacity-50"
-                            }`}
-                          >
-                            {element?.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          onDoubleClick={() => openExpansionPanel(element)}
+                        >
+                          <td className="px-4 py-3">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5 cursor-pointer"
+                              checked={selectedProperties.has(element.id)}
+                              onChange={() => toggleCheckbox(element.id)}
+                            />
+                          </td>
+                          <td className="px-4 py-3 text-black font-medium">
+                            {element?.first_name}
+                          </td>
+                          <td className="px-4 py-3 text-black font-medium">
+                            {element?.last_name}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {element?.property_type}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {element?.amount}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">Yes</td>
+                          <td className="px-4 py-3 text-gray-600">No</td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {element?.state}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">04/18/24</td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {new Date(
+                              element?.date_of_last_contact
+                            ).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`px-2 py-1 rounded font-semibold   ${
+                                element.status === "FAILED"
+                                  ? "text-[#CB0000] bg-[#D8E7E5] bg-opacity-50"
+                                  : "text-[#3EA102] bg-[#D8E7E5] bg-opacity-50"
+                              }`}
+                            >
+                              {element?.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          ) : (
-            !isLoading && (
-              <div className="text-center text-gray-400 font-normal">
-                <h2 className="font-bold">No Properties Available</h2>
-                <p>Create any new property to display it here.</p>
-              </div>
-            )
-          )}
-        </div>
+            ) : (
+              !isLoading && (
+                <div className="text-center text-gray-400 font-normal">
+                  <h2 className="font-bold">No Properties Available</h2>
+                  <p>Create any new property to display it here.</p>
+                </div>
+              )
+            )}
+          </div>
+        )}
+
         {isExpansionPanelOpen && (
           <Details
             isOpen={isExpansionPanelOpen}

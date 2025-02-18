@@ -68,6 +68,8 @@ const UserAuthenticationSlice = createSlice({
     // Uploads Data
     FetchUploadsRequest: (state) => {
       state.isLoadingUploads = true;
+      state.uploads = []; // Reset uploads state when uploading a file
+      state.error = null;
     },
     FetchUploadsSuccess: (state, action) => {
       state.isLoadingUploads = false;
@@ -117,20 +119,7 @@ const UserAuthenticationSlice = createSlice({
       state.isLoadingUploads = false;
       state.error = action.payload;
     },
-    // File Upload Actions
-    FileUploadRequest: (state) => {
-      state.isUploadingFile = true;
-      state.error = null;
-      state.uploads = []; // Reset uploads state when uploading a file
-    },
-    FileUploadSuccess: (state, action) => {
-      state.isUploadingFile = false;
-      state.uploads.push(action.payload); // Add the new upload to the state
-    },
-    FileUploadFailure: (state, action) => {
-      state.isUploadingFile = false;
-      state.error = action.payload;
-    },
+
     // Reset State
     ResetState: (state) => {
       Object.assign(state, initialState);

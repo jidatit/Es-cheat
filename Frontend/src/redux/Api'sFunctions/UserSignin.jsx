@@ -59,7 +59,7 @@ export const fetchUploadsAPI = async (filterData) => {
 export const uploadFileAPI = async (holder, template, dropDownValue, file) => {
   try {
     const token = Cookies.get("token"); // Get JWT from cookies
-    const apiUrl = `http://52.32.15.59:8000/v1/holder/${holder}/upload`;
+    const apiUrl = `${ApiUrls.COMMON_URL}/holder/${holder}/upload`;
 
     const formData = new FormData();
     formData.append("holder", holder);
@@ -84,7 +84,7 @@ export const uploadFileAPI = async (holder, template, dropDownValue, file) => {
 export const fetchUploadRecordsAPI = async (uploadId, searchText) => {
   try {
     const token = Cookies.get("token"); // Get JWT token
-    const apiUrl = `http://52.32.15.59:8000/v1/upload/${uploadId}/records/filters`;
+    const apiUrl = `${ApiUrls.COMMON_URL}/upload/${uploadId}/records/filters`;
 
     const response = await axios.post(
       apiUrl,
@@ -113,7 +113,7 @@ export const fetchUploadRecordsAPI = async (uploadId, searchText) => {
 export const deleteUploadAPI = async (uploadId) => {
   try {
     const token = Cookies.get("token"); // Get JWT token
-    const apiUrl = `http://52.32.15.59:8000/v1/upload?ids=${uploadId}`;
+    const apiUrl = `${ApiUrls.COMMON_URL}/upload?ids=${uploadId}`;
 
     const response = await axios.delete(apiUrl, {
       headers: {

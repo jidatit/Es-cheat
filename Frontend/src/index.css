@@ -8,7 +8,7 @@
 
 body {
   @apply bg-gray-100; 
-
+font-family: poppins, sans-serif;
 }
 
 #root{
@@ -109,6 +109,24 @@ body {
 
 
 
+.css-1ypuhzm-MuiButtonBase-root-MuiButton-root {
+  font-family: poppins, sans-serif !important;
+}
+.css-e3mqlf-MuiButtonBase-root-MuiButton-root {font-family: poppins, sans-serif !important;
+}
+.css-se1ikv-MuiButtonBase-root-MuiButton-root {
 
+font-family: poppins, sans-serif !important;
+}
+.css-a6awqa-MuiButtonBase-root-MuiButton-root {
 
+  font-family: poppins, sans-serif !important;
+  }
+.css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input {
+padding: 12px !important;
 
+}
+.css-sc8y68-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root {
+border-radius: 8px !important;
+border: 0px solid #cacaca !important;
+}

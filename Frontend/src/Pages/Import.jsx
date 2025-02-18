@@ -17,6 +17,7 @@ import {
   fetchUploads,
 } from "../redux/Actions/UserSignin";
 import { ResetUploadState } from "../redux/Slices/UserAuthenticationSlice";
+import { LoadingSpinner } from "../App";
 
 const ImportPage = () => {
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
@@ -135,7 +136,7 @@ const ImportPage = () => {
 
   const handleConfirmDelete = async () => {
     if (dialogData.uploadIds.length > 0) {
-      await dispatch(deleteUpload(dialogData.uploadIds)); // Pass the array of IDs
+      await dispatch(deleteUpload(dialogData.uploadIds, setSelectedUploads)); // Pass the array of IDs
     }
     closeDeleteDialog();
   };
@@ -270,7 +271,48 @@ const ImportPage = () => {
         selectedUploads.size > 0 && selectedUploads.size < uploads.length;
     }
   }, [selectedUploads]);
+  // if (!uploads?.length && isLoading) {
+  //   return (
+  //     <div className="property-table overflow-x-auto relative">
+  //       <table className="min-w-max w-full table-auto border-collapse">
+  //         <thead className="sticky top-0 bg-white font-normal">
+  //           <tr className="text-gray-500 font-normal text-md">
+  //             <th className="px-4 py-2 font-normal">
+  //               <input
+  //                 type="checkbox"
+  //                 className="w-5 h-5 cursor-pointer"
+  //                 disabled
+  //               />
+  //             </th>
+  //             {columnList
+  //               .filter((col) => col.checked)
+  //               .map((column, index) => (
+  //                 <th key={index} className="px-4 py-2 font-normal">
+  //                   <div className="flex items-center">{column.name}</div>
+  //                 </th>
+  //               ))}
+  //           </tr>
+  //         </thead>
+  //         <tbody>
+  //           <tr>
+  //             <td colSpan={columnList.filter((col) => col.checked).length + 1}>
+  //               <LoadingSpinner />
+  //             </td>
+  //           </tr>
+  //         </tbody>
+  //       </table>
+  //     </div>
+  //   );
+  // }
 
+  // if (!uploads?.length) {
+  //   return (
+  //     <AppNoData
+  //       title="No Uploads Available"
+  //       subtitle="Upload any new file to display it here."
+  //     />
+  //   );
+  // }
   return (
     <div className="">
       <div className=" flex justify-between items-center gap-[3.2rem] mb-[2.4rem]">
@@ -418,9 +460,11 @@ const ImportPage = () => {
           <div className=" flex items-center">
             {selectedUploads.size > 0 && (
               <div className="selected-row flex items-center">
-                <span>{selectedUploads.size} Selected</span>
+                <span className="text-[14px] text-gray-600">
+                  {selectedUploads.size} Selected
+                </span>
                 <button
-                  className="delete-btn flex items-center ml-4"
+                  className="delete-btn flex items-center ml-4 border-2 text-sm border-red-400 px-4 py-1.5 rounded-lg"
                   onClick={
                     () => openDeleteDialogue("Delete Upload", selectedUploads) // Pass the Set directly
                   }
@@ -443,160 +487,190 @@ const ImportPage = () => {
           </div>
         </div>
         {appliedFilters.length > 0 && (
-          <div className="applied-filter flex justify-between items-center mb-4">
-            <div className="flex items-center">
-              <div>
-                <small>Applied Filter:</small>
-              </div>
+          <div className="flex justify-between items-center p-4 bg-white">
+            <div className="flex items-center flex-wrap gap-2">
+              <div className="text-sm text-gray-500">Applied Filter:</div>
               {appliedFilters.map((filter, i) => (
-                <div key={i} className="filter-chip flex items-center ml-4">
-                  <div>
-                    <span>{filter?.displayName}</span>
-                  </div>
-                  <a onClick={() => removeFilter(i)}>
-                    <img
-                      src="/assets/images/close-circle-icon.svg"
-                      alt=""
-                      className="ml-2 mt-1"
-                    />
-                  </a>
+                <div
+                  key={i}
+                  className="flex items-center px-3 py-1 bg-gray-100 rounded-full text-sm"
+                >
+                  <span className="text-gray-700">{filter.displayName}</span>
+                  <button
+                    onClick={() => removeFilter(i)}
+                    className="ml-2 p-1 hover:opacity-80"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
-            <a onClick={removeAllFilters}>
-              <div className="filter-chip blue-chip flex items-center">
-                <div>
-                  <span>Clear All ({appliedFilters.length})</span>
-                </div>
-              </div>
-            </a>
+
+            <button
+              onClick={removeAllFilters}
+              className="flex items-center px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm hover:bg-blue-100"
+            >
+              Clear All ({appliedFilters.length})
+            </button>
           </div>
         )}
-
-        {uploads?.length > 0 ? (
-          <div
-            className={`property-table overflow-x-auto relative ${
-              appliedFilters.length > 0 ? "height-applied-filter" : ""
-            } ${
-              selectedUploads.size > 0 && appliedFilters.length > 0
-                ? "height-menu"
-                : ""
-            }`}
-          >
-            <table className="min-w-max w-full table-auto border-collapse">
-              <thead className="sticky top-0 bg-white font-normal">
-                <tr className="text-gray-500 font-normal text-md">
-                  <th className="px-4 py-2 font-normal">
-                    <input
-                      type="checkbox"
-                      className="w-5 h-5 cursor-pointer"
-                      indeterminate={
-                        selectedUploads.size > 0 &&
-                        selectedUploads.size < uploads.length
-                      }
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
-                  {columnList
-                    .filter((col) => col.checked) // Only show checked columns
-                    .map((column, index) => (
-                      <th key={index} className="px-4 py-2 font-normal">
-                        <div
-                          onClick={() => toggleSort(column.name)}
-                          className="flex items-center cursor-pointer group"
-                        >
-                          {column.name}
-                          <span className="ml-1 opacity-0 group-hover:opacity-100">
-                            {getIcon(column.name) || <IoArrowDownOutline />}
-                          </span>
-                        </div>
-                      </th>
-                    ))}
-                </tr>
-              </thead>
-              <tbody>
-                {(appliedFilters.length > 0 ? uploads : uploadsData)?.length >
-                0 ? (
-                  (appliedFilters.length > 0 ? uploads : uploadsData).map(
-                    (element, index) => (
-                      <tr
-                        key={index}
-                        className={`border-none transition duration-200 ease-in-out ${
-                          selectedUploads.has(element.id)
-                            ? "bg-blue-100 bg-opacity-50"
-                            : "hover:bg-blue-100 hover:bg-opacity-50"
-                        }`}
-                      >
-                        <td className="px-4 py-3">
-                          <input
-                            type="checkbox"
-                            className="w-5 h-5 cursor-pointer"
-                            checked={selectedUploads.has(element.id)}
-                            onChange={() => toggleCheckbox(element.id)}
-                          />
-                        </td>
-                        {columnList.map(
-                          (column, colIndex) =>
-                            column.checked && (
-                              <td
-                                key={colIndex}
-                                className="px-4 py-3 text-gray-600 text-left"
-                              >
-                                {column.name === "Batch Id" && element?.id}
-                                {column.name === "File Name" &&
-                                  element?.file_name}
-                                {column.name === "Holder Name" &&
-                                  element?.holder?.name}
-                                {column.name === "Records" &&
-                                  element?.total_records}
-                                {column.name === "Succeed" &&
-                                  element?.successful_records}
-                                {column.name === "Failed" && (
-                                  <span className="text-[#CB0000]">
-                                    {element?.failed_records}
-                                  </span>
-                                )}
-                                {column.name === "Import date" &&
-                                  new Date(element.created_at).toLocaleString()}
-                                {column.name === "User" &&
-                                  `${element?.uploader?.first_name} ${element?.uploader?.last_name}`}
-                                {column.name === "Status" && (
-                                  <span
-                                    className={`px-2 py-1 rounded font-semibold   ${
-                                      element.status === "FAILED"
-                                        ? "text-[#CB0000] bg-[#D8E7E5] bg-opacity-50"
-                                        : "text-[#3EA102] bg-[#D8E7E5] bg-opacity-50"
-                                    }`}
-                                  >
-                                    {element?.status}
-                                  </span>
-                                )}
-                              </td>
-                            )
-                        )}
-                      </tr>
-                    )
-                  )
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="100%"
-                      className="text-center py-4 text-gray-500"
-                    >
-                      No uploads found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        {isLoading ? (
+          <div className=" ">
+            {" "}
+            <div className="flex items-center justify-center h-[35vh] loading-spinner">
+              <div className="w-16 h-16 border-4 rounded-full border-t-transparent border-blue-600 animate-spin"></div>
+            </div>
           </div>
         ) : (
-          <AppNoData
-            title="No Uploads Available"
-            subtitle="Upload any new file to display it here."
-          />
+          <>
+            {uploads?.length > 0 ? (
+              <div
+                className={`property-table overflow-x-auto relative ${
+                  appliedFilters.length > 0 ? "height-applied-filter" : ""
+                } ${
+                  selectedUploads.size > 0 && appliedFilters.length > 0
+                    ? "height-menu"
+                    : ""
+                }`}
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse table-auto">
+                    <thead className="sticky top-0 bg-white">
+                      <tr className="text-gray-500 text-md">
+                        <th className="w-16 px-4 py-3 text-left font-normal">
+                          <input
+                            type="checkbox"
+                            className="w-5 h-5 mt-2 cursor-pointer"
+                            indeterminate={
+                              selectedUploads.size > 0 &&
+                              selectedUploads.size < uploads.length
+                            }
+                            onChange={toggleSelectAll}
+                          />
+                        </th>
+                        {columnList
+                          .filter((col) => col.checked) // Only show checked columns
+                          .map((column, index) => (
+                            <th key={index} className="px-4 py-2 font-normal">
+                              <div
+                                onClick={() => toggleSort(column.name)}
+                                className="flex items-center cursor-pointer group"
+                              >
+                                {column.name}
+                                <span className="ml-1 opacity-0 group-hover:opacity-100">
+                                  {getIcon(column.name) || (
+                                    <IoArrowDownOutline />
+                                  )}
+                                </span>
+                              </div>
+                            </th>
+                          ))}
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {(appliedFilters.length > 0 ? uploads : uploadsData)
+                        ?.length > 0 ? (
+                        (appliedFilters.length > 0 ? uploads : uploadsData).map(
+                          (element, index) => (
+                            <tr
+                              key={index}
+                              className={`border-none transition duration-200 ease-in-out ${
+                                selectedUploads.has(element.id)
+                                  ? "bg-blue-100 bg-opacity-50"
+                                  : "hover:bg-blue-100 hover:bg-opacity-50"
+                              }`}
+                            >
+                              <td className="px-4 py-3">
+                                <input
+                                  type="checkbox"
+                                  className="w-5 h-5 mt-2 cursor-pointer"
+                                  checked={selectedUploads.has(element.id)}
+                                  onChange={() => toggleCheckbox(element.id)}
+                                />
+                              </td>
+                              {columnList.map(
+                                (column, colIndex) =>
+                                  column.checked && (
+                                    <td
+                                      key={colIndex}
+                                      className="px-4 py-3 text-gray-600 text-left"
+                                    >
+                                      {column.name === "Batch Id" &&
+                                        element?.id}
+                                      {column.name === "File Name" &&
+                                        element?.file_name}
+                                      {column.name === "Holder Name" &&
+                                        element?.holder?.name}
+                                      {column.name === "Records" &&
+                                        element?.total_records}
+                                      {column.name === "Succeed" &&
+                                        element?.successful_records}
+                                      {column.name === "Failed" && (
+                                        <span className="text-[#CB0000]">
+                                          {element?.failed_records}
+                                        </span>
+                                      )}
+                                      {column.name === "Import date" &&
+                                        new Date(
+                                          element.created_at
+                                        ).toLocaleString()}
+                                      {column.name === "User" &&
+                                        `${element?.uploader?.first_name} ${element?.uploader?.last_name}`}
+                                      {column.name === "Status" && (
+                                        <span
+                                          className={`px-2 py-1 rounded font-semibold   ${
+                                            element.status === "FAILED"
+                                              ? "text-[#CB0000] bg-[#D8E7E5] bg-opacity-50"
+                                              : "text-[#3EA102] bg-[#D8E7E5] bg-opacity-50"
+                                          }`}
+                                        >
+                                          {element?.status}
+                                        </span>
+                                      )}
+                                    </td>
+                                  )
+                              )}
+                            </tr>
+                          )
+                        )
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="100%"
+                            className="text-center py-4 text-gray-500"
+                          >
+                            No uploads found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <AppNoData
+                title="No Uploads Available"
+                subtitle="Upload any new file to display it here."
+              />
+            )}
+          </>
         )}
       </div>
+
       <UploadDialog
         isOpen={isUploadDialogOpen}
         onClose={() => setIsUploadDialogOpen(false)}

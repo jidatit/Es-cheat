@@ -49,7 +49,7 @@ const ComplianceCalendarDialog = ({ open, onClose }) => {
         <style>
           {`
           .MuiInputBase-input.MuiOutlinedInput-input {
-            padding: 5px; 
+            padding: 8px; 
           }
              .dialog-actions-left {
               justify-content: flex-start;
@@ -74,7 +74,7 @@ const ComplianceCalendarDialog = ({ open, onClose }) => {
                     {...params}
                     sx={{
                       "& .MuiInputBase-root": {
-                        padding: "16px", // Increased padding
+                        padding: "30px", // Increased padding
                         fontSize: "16px", // Larger font size
                         borderRadius: "8px", // Rounded corners
                       },
@@ -106,7 +106,6 @@ const ComplianceCalendarDialog = ({ open, onClose }) => {
               fullWidth
               sx={{
                 "& .MuiInputBase-root": {
-                  padding: "6px", // Increased padding
                   fontSize: "16px", // Larger font size
                   borderRadius: "8px", // Rounded corners
                 },
