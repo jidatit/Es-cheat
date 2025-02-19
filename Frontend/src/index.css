@@ -107,4 +107,26 @@ body {
 
 
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Very thin scrollbar */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6B6B6B; /* Black scrollbar thumb */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #D8D8D8; /* Black scrollbar track */
+  border-radius: 10px;
+}
+
+
+
+
+
+
+
+
 

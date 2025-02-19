@@ -276,12 +276,29 @@ useEffect(() => {
 
           <div className="flex items-center gap-x-4">
   {selectedProperties.size > 0 && (
-    <div className="selected-row flex items-center">
-      <span>{selectedProperties.size} Selected</span>
-      <button className="flex items-center ml-4" onClick={() => openDeleteDialogue('import', { uploadIds: [1, 2, 3] })}>
+    <div className="selected-row ml-24 flex items-center">
+      <span className='mr-4'>{selectedProperties.size} Selected</span>
+      <Button 
+       sx={{
+        backgroundColor: "transparent",
+        color: "#CB0000",
+        borderRadius: "10px",
+        padding: "6px 20px",
+        textTransform: "none",
+        border: "1px solid #CB0000", 
+        transition: "all 0.3s ease-in-out",
+    
+        "&:hover, &:focus": {
+          backgroundColor: "none",
+          border: "1px solid #CB0000", 
+          color: "#CB0000", 
+        },
+    
+      }}
+      className="flex items-center ml-4" onClick={() => openDeleteDialogue('import', { uploadIds: [1, 2, 3] })}>
         <img src={trashIcon} alt="delete-icon" className="mr-2" />
         Delete
-      </button>
+      </Button>
 
       {isDeleteDialogOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -429,6 +446,17 @@ useEffect(() => {
 };
 
 export default Properties;
+
+
+
+
+
+
+
+
+
+
+
 
 
 

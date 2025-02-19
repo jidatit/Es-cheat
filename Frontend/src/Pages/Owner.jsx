@@ -1,9 +1,9 @@
-// import React from 'react';
+import React from 'react';
 
-// const Owner = () => {
-//   return (
-//     <div>Owner</div>
-//   );
-// }
+const Owner = () => {
+  return (
+    <div>Owner</div>
+  );
+}
 
-// export default Owner;
+export default Owner;

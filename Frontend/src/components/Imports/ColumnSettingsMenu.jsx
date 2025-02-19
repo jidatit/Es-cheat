@@ -24,15 +24,17 @@ const ColumnSettingsMenu = ({ isOpen, columnList, toggleColumn, onApplyClick, on
       className=" fixed bg-white border rounded pl-4 pt-4"
       style={{ zIndex: 1000 }}
     >
-      <ul
-        style={{
-          maxHeight: "300px",
-          overflowY: "auto",
-          width: "230px",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#6C6C6C #6C6C6C",
-        }}
-      >
+
+<ul
+  style={{
+    maxHeight: "300px",
+    overflowY: "auto",
+    width: "230px",
+  }}
+  className="custom-scrollbar"
+>
+
+
         {columnList.map((column, i) => (
           <li
             key={i}
@@ -65,6 +67,8 @@ const ColumnSettingsMenu = ({ isOpen, columnList, toggleColumn, onApplyClick, on
             padding: '8px 25px',
             marginRight: '8px',
             textTransform:"none",
+            fontSize:"1rem",
+            
             '&:hover': {
               backgroundColor: '#0056b3' 
             }
@@ -82,10 +86,12 @@ const ColumnSettingsMenu = ({ isOpen, columnList, toggleColumn, onApplyClick, on
             textTransform: "none",
             border: "1px solid gray",
             transition: "all 0.3s ease-in-out",
+            fontSize:"1rem",
             "&:hover, &:focus": {
               backgroundColor: "#f0f0f0",
               border: "1px solid #007bff",
               color: "#007bff",
+
             },
             "&:hover svg path, &:focus svg path": {
               stroke: "#007bff",

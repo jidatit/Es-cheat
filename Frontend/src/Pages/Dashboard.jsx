@@ -103,6 +103,7 @@ const Dashboard = ({ isSidebarOpened }) => {
       </div>
       
       <div className="card-container flex gap-4 ">
+        
         <div className="card green-card p-2 rounded-lg w-72">
           <div className="flex items-center justify-between">
             <div>

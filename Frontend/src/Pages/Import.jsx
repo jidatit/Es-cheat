@@ -9,6 +9,8 @@ import { Button } from '@mui/material';
  import { IoArrowUpOutline } from "react-icons/io5";
  import { IoArrowDownOutline } from "react-icons/io5";
  import DeleteDialog from '../components/DeleteDialog';
+ import AppAlertRecords from './AppAlertRecords';
+
 
 const ImportPage = () => {
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
@@ -177,11 +179,12 @@ const getDefaultIcon = (key) => {
       <div className=" flex justify-between items-center gap-[3.2rem] mb-[2.4rem]">
       <h1 class="font-semibold text-2xl leading-7 w-1/10">Imports</h1>
         <div>    
-          <button className="border border-light-orange bg-[#FFA500] rounded-full w-12 h-12 flex justify-center items-center" onClick={toggleAlerts}>
+          <button className="border border-light-orange bg-[#FFA500] rounded-full w-12 h-12 flex justify-center items-center"
+           onClick={toggleAlerts}>
             <img src={Alert} alt="import" />
           </button>
           {isAlertsOpen && (
-            <AppAlertRecords isOpen={isAlertsOpen} closeAlert={() => setIsAlertsOpen(false)} />
+            <AppAlertRecords isOpen={isAlertsOpen} onClose={() => setIsAlertsOpen(false)} />
           )}
         </div>
       </div>
@@ -298,16 +301,34 @@ const getDefaultIcon = (key) => {
           <div className=" flex items-center">
             {selectedUploads.size > 0 && (
               <div className="selected-row flex items-center">
-                <span>{selectedUploads.size} Selected</span>
-                <button className="delete-btn flex items-center ml-4"
+                <span className='mr-2'>{selectedUploads.size} Selected</span>
+                <Button
+                  sx={{
+                    backgroundColor: "transparent",
+                    color: "#CB0000",
+                    borderRadius: "10px",
+                    padding: "6px 20px",
+                    textTransform: "none",
+                    border: "1px solid #CB0000", // Default border color
+                    transition: "all 0.3s ease-in-out",
+                
+                    "&:hover, &:focus": {
+                      backgroundColor: "none",
+                      border: "1px solid #CB0000", // Change border to blue
+                      color: "#CB0000", // Change text color to blue
+                    },
+                
+                  }}
+                
+                 className=" flex items-center ml-4"
                 //  onClick={openDeleteDialogue}
                       onClick={() => openDeleteDialogue('import',
- { uploadIds: [1, 2, 3] })}
+                 { uploadIds: [1, 2, 3] })}
 
                 >
                   <img src={Trash} alt="delete-icon" className="mr-2" />
                  Delete
-                </button>
+                </Button>
                   {isDeleteDialogOpen && (
                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <DeleteDialog
@@ -444,10 +465,10 @@ const getDefaultIcon = (key) => {
   );
 };
 
-const AppAlertRecords = ({ isOpen, closeAlert }) => {
-  // Implement alert records component
-  return null;
-};
+// const AppAlertRecords = ({ isOpen, closeAlert }) => {
+//  console.log("button clicked")
+//   return null;
+// };
 
 const AppNoData = ({ title, subtitle }) => {
   return (
